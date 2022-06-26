@@ -25,8 +25,7 @@ class DataContentShow {
     return TableRow(
       children: [
         Text(""),
-        Align(
-          alignment: Alignment.center,
+        Center(
           child: Text(
             "PRESENT",
             style: TextStyle(
@@ -36,8 +35,7 @@ class DataContentShow {
             ),
           ),
         ),
-        Align(
-          alignment: Alignment.center,
+        Center(
           child: Text(
             'SET',
             style: TextStyle(
@@ -47,8 +45,7 @@ class DataContentShow {
             ),
           ),
         ),
-        Align(
-          alignment: Alignment.center,
+        Center(
           child: Text(
             'CONTROLS',
             style: TextStyle(

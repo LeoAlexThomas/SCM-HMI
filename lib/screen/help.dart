@@ -33,6 +33,26 @@ class _HelpTabState extends State<HelpTab> {
   Widget safetyPDF;
   Widget faqsPDF;
 
+  Widget _buildTabs({
+    @required String tabName,
+    @required VoidCallback onTap,
+    @required bool isSelected,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.all(10),
+        child: Text(
+          tabName,
+          style: TextStyle(
+            color: isSelected ? AppColors.blue : AppColors.black,
+            fontSize: SizeConfig.font_height * 2,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,30 +200,19 @@ class _HelpTabState extends State<HelpTab> {
                                         SizeConfig.font_height * 2.65, //20
                                   ),
                                 ),
-                                ListTile(
-                                  selected: _helptabIndex == 1,
-                                  title: Text(
-                                    'Connectivity',
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.font_height * 2,
-                                    ),
-                                  ),
-                                  onTap: () async {
+                                _buildTabs(
+                                  tabName: 'Connectivity',
+                                  onTap: () {
                                     _b_software = false;
                                     setState(() {
                                       _helptabIndex = 1;
                                     });
                                     ;
                                   },
+                                  isSelected: _helptabIndex == 1,
                                 ),
-                                ListTile(
-                                  selected: _helptabIndex == 2,
-                                  title: Text(
-                                    'Interface',
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.font_height * 2,
-                                    ),
-                                  ),
+                                _buildTabs(
+                                  tabName: 'Interface',
                                   onTap: () {
                                     _b_software = false;
                                     setState(() {
@@ -211,6 +220,7 @@ class _HelpTabState extends State<HelpTab> {
                                     });
                                     ;
                                   },
+                                  isSelected: _helptabIndex == 2,
                                 ),
                               ],
                             ),
@@ -288,19 +298,14 @@ class _HelpTabState extends State<HelpTab> {
                                         SizeConfig.font_height * 2.65, //20
                                   ),
                                 ),
-                                ListTile(
-                                  selected: _helptabIndex == 3,
-                                  title: Text(
-                                    'Prequisites',
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.font_height * 2,
-                                    ),
-                                  ),
-                                  onTap: () async {
+                                _buildTabs(
+                                  tabName: 'Prequisites',
+                                  onTap: () {
                                     if (!(_helptabIndex == 3)) {
                                       _b_machine = false;
                                       File pdfFile = File(
-                                          '${widget.helpFilePath}/1_SCM_M_Prerequisites.pdf');
+                                        '${widget.helpFilePath}/1_SCM_M_Prerequisites.pdf',
+                                      );
                                       prequisitesPDF =
                                           PDFView(filePath: pdfFile.path);
                                       setState(() {
@@ -308,86 +313,67 @@ class _HelpTabState extends State<HelpTab> {
                                       });
                                     }
                                   },
+                                  isSelected: _helptabIndex == 3,
                                 ),
-                                ListTile(
-                                  selected: _helptabIndex == 4,
-                                  title: Text(
-                                    'Technical Details',
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.font_height * 2,
-                                    ),
-                                  ),
-                                  onTap: () async {
+                                _buildTabs(
+                                  tabName: 'Technical Details',
+                                  onTap: () {
                                     _b_machine = false;
                                     File pdfFile = File(
-                                        '${widget.helpFilePath}/2_SCM_M_TechnicalDetails.pdf');
+                                      '${widget.helpFilePath}/2_SCM_M_TechnicalDetails.pdf',
+                                    );
                                     technicalPDF =
                                         PDFView(filePath: pdfFile.path);
                                     setState(() {
                                       _helptabIndex = 4;
                                     });
-                                    ;
                                   },
+                                  isSelected: _helptabIndex == 4,
                                 ),
-                                ListTile(
-                                  selected: _helptabIndex == 5,
-                                  title: Text(
-                                    'Operation',
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.font_height * 2,
-                                    ),
-                                  ),
-                                  onTap: () async {
+                                _buildTabs(
+                                  tabName: 'Operation',
+                                  onTap: () {
                                     _b_machine = false;
                                     File pdfFile = File(
-                                        '${widget.helpFilePath}/3_SCM_M_OperatingInstruction.pdf');
+                                      '${widget.helpFilePath}/3_SCM_M_OperatingInstruction.pdf',
+                                    );
                                     operationPDF =
                                         PDFView(filePath: pdfFile.path);
                                     setState(() {
                                       _helptabIndex = 5;
                                     });
-                                    ;
                                   },
+                                  isSelected: _helptabIndex == 5,
                                 ),
-                                ListTile(
-                                  selected: _helptabIndex == 6,
-                                  title: Text(
-                                    'Attachments',
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.font_height * 2,
-                                    ),
-                                  ),
-                                  onTap: () async {
+                                _buildTabs(
+                                  tabName: 'Attachments',
+                                  onTap: () {
                                     _b_machine = false;
 
                                     File pdfFile = File(
-                                        '${widget.helpFilePath}/4_SCM_M_Attachments.pdf');
+                                      '${widget.helpFilePath}/4_SCM_M_Attachments.pdf',
+                                    );
                                     attachmentsPDF =
                                         PDFView(filePath: pdfFile.path);
                                     setState(() {
                                       _helptabIndex = 6;
                                     });
-                                    ;
                                   },
+                                  isSelected: _helptabIndex == 6,
                                 ),
-                                ListTile(
-                                  selected: _helptabIndex == 7,
-                                  title: Text(
-                                    'Safety',
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.font_height * 2,
-                                    ),
-                                  ),
-                                  onTap: () async {
+                                _buildTabs(
+                                  tabName: 'Safety',
+                                  onTap: () {
                                     _b_machine = false;
                                     File pdfFile = File(
-                                        '${widget.helpFilePath}/5_SCM_M_Safety_Instructions.pdf');
+                                      '${widget.helpFilePath}/5_SCM_M_Safety_Instructions.pdf',
+                                    );
                                     safetyPDF = PDFView(filePath: pdfFile.path);
                                     setState(() {
                                       _helptabIndex = 7;
                                     });
-                                    ;
                                   },
+                                  isSelected: _helptabIndex == 7,
                                 ),
                               ],
                             ),
@@ -520,7 +506,7 @@ class _HelpTabState extends State<HelpTab> {
           children: [
             TabBar(
               onTap: (value) async {
-                if (value == 1) {
+                if (value == 0) {
                   File pdfFile =
                       File('${widget.helpFilePath}/wifi_connection.pdf');
                   wifiConnectionPDF = PDFView(filePath: pdfFile.path);
@@ -584,7 +570,7 @@ class _HelpTabState extends State<HelpTab> {
         vertical: SizeConfig.screen_height * 1,
         horizontal: SizeConfig.screen_width * 1,
       ),
-      child: wifiConnectionPDF,
+      child: child,
     );
   }
 

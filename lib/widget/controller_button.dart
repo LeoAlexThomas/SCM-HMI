@@ -20,7 +20,7 @@ class ControllerButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: SizeConfig.screen_height * 5.5, //50
-      margin: EdgeInsets.only(bottom: SizeConfig.screen_width * 0.5),
+      margin: EdgeInsets.only(bottom: SizeConfig.screen_height * 0.5),
       padding: EdgeInsets.symmetric(
         horizontal: SizeConfig.screen_width * 0.5,
       ),
@@ -30,7 +30,7 @@ class ControllerButton extends StatelessWidget {
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             primary: buttonColor,
-            padding: EdgeInsets.all(5.0),
+            padding: EdgeInsets.symmetric(horizontal: 5.0),
           ),
           onPressed: onPress,
           child: Text(

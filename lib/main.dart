@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:StirCastingMachine/data/data.dart';
-import 'package:StirCastingMachine/model/customer_details_response.dart';
 import 'package:StirCastingMachine/screen/customer_details.dart';
 import 'package:StirCastingMachine/screen/data_logger.dart';
 import 'package:StirCastingMachine/screen/help.dart';
@@ -691,344 +690,354 @@ class _MainAppSampleState extends State<MainAppSample> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  HeaterCard(
-                    furnaceButtonLabel: btns['btnFurnace']['btnState'],
-                    isFurnaceOn: b_lbl_furnace,
-                    furnaceButtonColor: btns['btnFurnace']['btnColor'],
-                    powderButtonLabel: btns['btnPowder']['btnState'],
-                    isPowderOn: b_lbl_powder,
-                    powderButtonColor: btns['btnPowder']['btnColor'],
-                    mouldButtonLabel: btns['btnMold']['btnState'],
-                    isMouldOn: b_lbl_mould,
-                    mouldButtonColor: btns['btnMold']['btnColor'],
-                    furnacePrecentValue:
-                        d_pv_furnace.toString().padLeft(4, '0'),
-                    meltPrecentValue: d_pv_melt.toString().padLeft(4, '0'),
-                    powderPrecentValue: d_pv_powder.toString().padLeft(4, '0'),
-                    mouldPrecentValue: d_pv_mould.toString().padLeft(4, '0'),
-                    furnaceSetValue: d_sv_furnace.toString().padLeft(4, '0'),
-                    meltSetValue: d_sv_melt.toString().padLeft(4, '0'),
-                    powderSetValue: d_sv_powder.toString().padLeft(4, '0'),
-                    mouldSetValue: d_sv_mould.toString().padLeft(4, '0'),
-                    onFurnacePress: b_btn_Mains
-                        ? () {
-                            setState(() {
-                              b_btn_Furance = btnState(
-                                  'heater', btns['btnFurnace'], b_btn_Furance);
-                              if (!b_btn_Furance) {
-                                bFurnaceHeatOUT = false;
-                              }
-                            });
-                          }
-                        : null,
-                    onPowderPress: b_btn_Mains
-                        ? () {
-                            setState(() {
-                              b_btn_Powder = btnState(
-                                  'heater', btns['btnPowder'], b_btn_Powder);
-                              if (!b_btn_Powder) bPowderHeatOUT = false;
-                            });
-                          }
-                        : null,
-                    onMouldPress: b_btn_Mains
-                        ? () {
-                            setState(() {
-                              b_btn_Mould = btnState(
-                                  'heater', btns['btnMold'], b_btn_Mould);
-                              if (!b_btn_Mould) bMouldHeatOUT = false;
-                            });
-                          }
-                        : null,
-                    calc: calc,
-                    onFurnaceDecLongPressStart: (_) {
-                      if ((b_btn_Mains) && (!b_btn_Furance)) {
-                        valuedecrementLongPress('furnace');
-                      }
-                    },
-                    onFurnaceDecreament: () {
-                      if ((b_btn_Mains) && (!b_btn_Furance)) {
-                        setState(() {
-                          d_sv_furnace =
-                              calc.valuedecrement('furnace', d_sv_furnace);
-                        });
-                      }
-                    },
-                    onFurnaceIncLongPressStart: (_) {
-                      if ((b_btn_Mains) && (!b_btn_Furance)) {
-                        valueincrementLongPress('furnace');
-                      }
-                    },
-                    onFurnaceIncreament: () {
-                      if ((b_btn_Mains) &&
-                          (!b_btn_Furance)) if (!b_btn_Furance) {
-                        setState(() {
-                          d_sv_furnace =
-                              calc.valueincrement('furnace', d_sv_furnace);
-                        });
-                      }
-                    },
-                    onMeltDecLongPressStart: (_) {
-                      if ((b_btn_Mains) && (!b_btn_Furance)) {
-                        valuedecrementLongPress('melt');
-                      }
-                    },
-                    onMeltDecreament: () {
-                      if ((b_btn_Mains) && (!b_btn_Furance)) {
-                        d_sv_melt = calc.valuedecrement('melt', d_sv_melt);
-                      }
-                    },
-                    onMeltIncLongPressStart: (_) {
-                      if ((b_btn_Mains) && (!b_btn_Furance)) {
-                        valueincrementLongPress('melt');
-                      }
-                    },
-                    onMeltIncreament: () {
-                      if ((b_btn_Mains) && (!b_btn_Furance)) {
-                        d_sv_melt = calc.valueincrement('melt', d_sv_melt);
-                      }
-                    },
-                    onPowderDecLongPressStart: (_) {
-                      if ((b_btn_Mains) && (!b_btn_Powder)) {
-                        valuedecrementLongPress('powder');
-                      }
-                    },
-                    onPowderDecreament: () {
-                      if ((b_btn_Mains) && (!b_btn_Powder)) {
-                        d_sv_powder =
-                            calc.valuedecrement('powder', d_sv_powder);
-                      }
-                    },
-                    onPowderIncLongPressStart: (_) {
-                      if ((b_btn_Mains) && (!b_btn_Powder)) {
-                        valueincrementLongPress('powder');
-                      }
-                    },
-                    onPowderIncreament: () {
-                      if ((b_btn_Mains) && (!b_btn_Powder)) {
-                        d_sv_powder =
-                            calc.valueincrement('powder', d_sv_powder);
-                      }
-                    },
-                    onMouldDecLongPressStart: (_) {
-                      if ((b_btn_Mains) && (!b_btn_Mould)) {
-                        valuedecrementLongPress('mold');
-                      }
-                    },
-                    onMouldDecreament: () {
-                      if ((b_btn_Mains) && (!b_btn_Mould)) {
-                        d_sv_mould = calc.valuedecrement('mold', d_sv_mould);
-                      }
-                    },
-                    onMouldIncLongPressStart: (_) {
-                      if ((b_btn_Mains) && (!b_btn_Mould)) {
-                        valueincrementLongPress('mold');
-                      }
-                    },
-                    onMouldIncreament: () {
-                      if ((b_btn_Mains) && (!b_btn_Mould)) {
-                        d_sv_mould = calc.valueincrement('mold', d_sv_mould);
-                      }
-                    },
-                    onLongPressEnd: (_) => longPressRelease(),
-                  ),
-                  PouringCard(
-                    buttonLabel: btns['btnPour']['btnState'],
-                    calc: calc,
-                    buttonColor: btns['btnPour']['btnColor'],
-                    operationName: '1) VALVE',
-                    precentValue: calc.pourCondition(d_pv_pour_pos),
-                    setValue: btns['btnPour']['btnState'],
-                    onIncreament: () {
-                      if ((b_btn_Mains) && (!b_btn_Mould)) {
-                        d_sv_mould = calc.valueincrement('mold', d_sv_mould);
-                      }
-                    },
-                    ondecreament: () {
-                      if ((b_btn_Mains) && (!b_btn_Mould)) {
-                        d_sv_mould = calc.valuedecrement('mold', d_sv_mould);
-                      }
-                    },
-                    onIncLongPressStart: (_) {
-                      if ((b_btn_Mains) && (!b_btn_Mould)) {
-                        valueincrementLongPress('mold');
-                      }
-                    },
-                    onDecLongPressStart: (_) {
-                      if ((b_btn_Mains) && (!b_btn_Mould)) {
-                        valuedecrementLongPress('mold');
-                      }
-                    },
-                    onLongPressEnd: (_) => longPressRelease(),
-                    onPress: b_btn_Mains
-                        ? () {
-                            if (b_btn_Mains) {
+                  SizedBox(
+                    height: SizeConfig.screen_height * 38,
+                    child: HeaterCard(
+                      furnaceButtonLabel: btns['btnFurnace']['btnState'],
+                      isFurnaceOn: b_lbl_furnace,
+                      furnaceButtonColor: btns['btnFurnace']['btnColor'],
+                      powderButtonLabel: btns['btnPowder']['btnState'],
+                      isPowderOn: b_lbl_powder,
+                      powderButtonColor: btns['btnPowder']['btnColor'],
+                      mouldButtonLabel: btns['btnMold']['btnState'],
+                      isMouldOn: b_lbl_mould,
+                      mouldButtonColor: btns['btnMold']['btnColor'],
+                      furnacePrecentValue:
+                          d_pv_furnace.toString().padLeft(4, '0'),
+                      meltPrecentValue: d_pv_melt.toString().padLeft(4, '0'),
+                      powderPrecentValue:
+                          d_pv_powder.toString().padLeft(4, '0'),
+                      mouldPrecentValue: d_pv_mould.toString().padLeft(4, '0'),
+                      furnaceSetValue: d_sv_furnace.toString().padLeft(4, '0'),
+                      meltSetValue: d_sv_melt.toString().padLeft(4, '0'),
+                      powderSetValue: d_sv_powder.toString().padLeft(4, '0'),
+                      mouldSetValue: d_sv_mould.toString().padLeft(4, '0'),
+                      onFurnacePress: b_btn_Mains
+                          ? () {
                               setState(() {
-                                if (!b_btn_Pour_Open) {
-                                  showAlertMessageOKCANCEL(
-                                    'Please click OK to open the pour valve!',
-                                  );
-                                } else {
-                                  b_btn_Pour_Open = btnState('pouring',
-                                      btns['btnPour'], b_btn_Pour_Open);
-                                }
-                                if (b_btn_Pour_Open) {
-                                  b_Start_B_Gas_Counter = true;
-                                } else {
-                                  d_B_Gas_idx = 0;
+                                b_btn_Furance = btnState('heater',
+                                    btns['btnFurnace'], b_btn_Furance);
+                                if (!b_btn_Furance) {
+                                  bFurnaceHeatOUT = false;
                                 }
                               });
                             }
-                          }
-                        : null,
+                          : null,
+                      onPowderPress: b_btn_Mains
+                          ? () {
+                              setState(() {
+                                b_btn_Powder = btnState(
+                                    'heater', btns['btnPowder'], b_btn_Powder);
+                                if (!b_btn_Powder) bPowderHeatOUT = false;
+                              });
+                            }
+                          : null,
+                      onMouldPress: b_btn_Mains
+                          ? () {
+                              setState(() {
+                                b_btn_Mould = btnState(
+                                    'heater', btns['btnMold'], b_btn_Mould);
+                                if (!b_btn_Mould) bMouldHeatOUT = false;
+                              });
+                            }
+                          : null,
+                      calc: calc,
+                      onFurnaceDecLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Furance)) {
+                          valuedecrementLongPress('furnace');
+                        }
+                      },
+                      onFurnaceDecreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Furance)) {
+                          setState(() {
+                            d_sv_furnace =
+                                calc.valuedecrement('furnace', d_sv_furnace);
+                          });
+                        }
+                      },
+                      onFurnaceIncLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Furance)) {
+                          valueincrementLongPress('furnace');
+                        }
+                      },
+                      onFurnaceIncreament: () {
+                        if ((b_btn_Mains) &&
+                            (!b_btn_Furance)) if (!b_btn_Furance) {
+                          setState(() {
+                            d_sv_furnace =
+                                calc.valueincrement('furnace', d_sv_furnace);
+                          });
+                        }
+                      },
+                      onMeltDecLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Furance)) {
+                          valuedecrementLongPress('melt');
+                        }
+                      },
+                      onMeltDecreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Furance)) {
+                          d_sv_melt = calc.valuedecrement('melt', d_sv_melt);
+                        }
+                      },
+                      onMeltIncLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Furance)) {
+                          valueincrementLongPress('melt');
+                        }
+                      },
+                      onMeltIncreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Furance)) {
+                          d_sv_melt = calc.valueincrement('melt', d_sv_melt);
+                        }
+                      },
+                      onPowderDecLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Powder)) {
+                          valuedecrementLongPress('powder');
+                        }
+                      },
+                      onPowderDecreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Powder)) {
+                          d_sv_powder =
+                              calc.valuedecrement('powder', d_sv_powder);
+                        }
+                      },
+                      onPowderIncLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Powder)) {
+                          valueincrementLongPress('powder');
+                        }
+                      },
+                      onPowderIncreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Powder)) {
+                          d_sv_powder =
+                              calc.valueincrement('powder', d_sv_powder);
+                        }
+                      },
+                      onMouldDecLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          valuedecrementLongPress('mold');
+                        }
+                      },
+                      onMouldDecreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          d_sv_mould = calc.valuedecrement('mold', d_sv_mould);
+                        }
+                      },
+                      onMouldIncLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          valueincrementLongPress('mold');
+                        }
+                      },
+                      onMouldIncreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          d_sv_mould = calc.valueincrement('mold', d_sv_mould);
+                        }
+                      },
+                      onLongPressEnd: (_) => longPressRelease(),
+                    ),
                   ),
-                  StirrerCard(
-                    stirrerButtonLabel: btns['btnStir']['btnState'],
-                    stirrerButtonColor: btns['btnStir']['btnColor'],
-                    stirrerPrecentValue:
-                        d_pv_stirrer.toString().padLeft(4, '0'),
-                    stirrerSetValue: d_sv_stirrer.toString().padLeft(4, '0'),
-                    onStirrerPress: b_btn_Mains
-                        ? () {
-                            setState(() {
-                              if (!b_btn_Stirrer) {
-                                b_btn_Stirrer = btnState(
-                                    'stir', btns['btnStir'], b_btn_Stirrer);
-                                d_stirrer_out = d_stirrer_min_val;
-                              } else {
+                  SizedBox(
+                    height: SizeConfig.screen_height * 18,
+                    child: PouringCard(
+                      buttonLabel: btns['btnPour']['btnState'],
+                      calc: calc,
+                      buttonColor: btns['btnPour']['btnColor'],
+                      operationName: '1) VALVE',
+                      precentValue: calc.pourCondition(d_pv_pour_pos),
+                      setValue: btns['btnPour']['btnState'],
+                      onIncreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          d_sv_mould = calc.valueincrement('mold', d_sv_mould);
+                        }
+                      },
+                      ondecreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          d_sv_mould = calc.valuedecrement('mold', d_sv_mould);
+                        }
+                      },
+                      onIncLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          valueincrementLongPress('mold');
+                        }
+                      },
+                      onDecLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          valuedecrementLongPress('mold');
+                        }
+                      },
+                      onLongPressEnd: (_) => longPressRelease(),
+                      onPress: b_btn_Mains
+                          ? () {
+                              if (b_btn_Mains) {
                                 setState(() {
-                                  d_pv_stirrer = 0;
+                                  if (!b_btn_Pour_Open) {
+                                    showAlertMessageOKCANCEL(
+                                      'Please click OK to open the pour valve!',
+                                    );
+                                  } else {
+                                    b_btn_Pour_Open = btnState('pouring',
+                                        btns['btnPour'], b_btn_Pour_Open);
+                                  }
+                                  if (b_btn_Pour_Open) {
+                                    b_Start_B_Gas_Counter = true;
+                                  } else {
+                                    d_B_Gas_idx = 0;
+                                  }
                                 });
-                                b_btn_Stirrer = btnState(
-                                    'stir', btns['btnStir'], b_btn_Stirrer);
-                                d_stirrer_out = 1;
-                                d_stirrer_start_idx = 0;
                               }
-                            });
-                          }
-                        : null,
-                    onStirrerDecLongPressStart: (_) {
-                      if (b_btn_Mains) {
-                        valuedecrementLongPress('speed');
-                      }
-                    },
-                    onStirrerDecreament: () {
-                      if (b_btn_Mains) {
-                        setState(() {
-                          d_sv_stirrer =
-                              calc.valuedecrement('speed', d_sv_stirrer);
-                        });
-                      }
-                    },
-                    onStirrerIncLongPressStart: (_) {
-                      if (b_btn_Mains) {
-                        valueincrementLongPress('speed');
-                      }
-                    },
-                    onStirrerIncreament: () {
-                      if (b_btn_Mains) {
-                        setState(() {
-                          d_sv_stirrer =
-                              calc.valueincrement('speed', d_sv_stirrer);
-                        });
-                      }
-                    },
-                    autoJogButtonLabel: btns['btnAutojog']['btnState'],
-                    autoJogButtonColor: btns['btnAutojog']['btnColor'],
-                    liftDownButtonColor: btns['btnStirDown']['btnColor'],
-                    liftUpButtonColor: btns['btnStirUp']['btnColor'],
-                    liftPos: calc.liftPosition(d_pv_lift_pos),
-                    autoJogSetValue: d_sv_autojog.toString(),
-                    onLiftUpPress: b_btn_Mains ? () {} : null,
-                    onLiftDownPress: b_btn_Mains ? () {} : null,
-                    onAutoJogPress: b_btn_Mains
-                        ? () {
-                            setState(() {
-                              b_btn_Auto_Jog = btnState('autojog',
-                                  btns['btnAutojog'], b_btn_Auto_Jog);
-                              if (b_btn_Auto_Jog) {
-                                autojogStartFn();
-                              } else {
-                                b_auto_jog_timer = false;
-                              }
-                            });
-                          }
-                        : null,
-                    onAutoJogDecLongPressStart: (LongPressStartDetails) {
-                      if (b_btn_Mains) {
-                        valuedecrementLongPress('autojog');
-                      }
-                    },
-                    onAutoJogDecreament: () {
-                      if (b_btn_Mains) {
-                        setState(() {
-                          d_sv_autojog =
-                              calc.valuedecrement('autojog', d_sv_autojog);
-                        });
-                      }
-                    },
-                    onAutoJogIncLongPressStart: (LongPressStartDetails) {
-                      if (b_btn_Mains) {
-                        valueincrementLongPress('autojog');
-                      }
-                    },
-                    onAutoJogIncreament: () {
-                      if (b_btn_Mains) {
-                        setState(() {
-                          d_sv_autojog =
-                              calc.valueincrement('autojog', d_sv_autojog);
-                        });
-                      }
-                    },
-                    onLiftDownLongPressStart: (_) {
-                      if (b_btn_Mains) {
+                            }
+                          : null,
+                    ),
+                  ),
+                  SizedBox(
+                    height: SizeConfig.screen_height * 31,
+                    child: StirrerCard(
+                      stirrerButtonLabel: btns['btnStir']['btnState'],
+                      stirrerButtonColor: btns['btnStir']['btnColor'],
+                      stirrerPrecentValue:
+                          d_pv_stirrer.toString().padLeft(4, '0'),
+                      stirrerSetValue: d_sv_stirrer.toString().padLeft(4, '0'),
+                      onStirrerPress: b_btn_Mains
+                          ? () {
+                              setState(() {
+                                if (!b_btn_Stirrer) {
+                                  b_btn_Stirrer = btnState(
+                                      'stir', btns['btnStir'], b_btn_Stirrer);
+                                  d_stirrer_out = d_stirrer_min_val;
+                                } else {
+                                  setState(() {
+                                    d_pv_stirrer = 0;
+                                  });
+                                  b_btn_Stirrer = btnState(
+                                      'stir', btns['btnStir'], b_btn_Stirrer);
+                                  d_stirrer_out = 1;
+                                  d_stirrer_start_idx = 0;
+                                }
+                              });
+                            }
+                          : null,
+                      onStirrerDecLongPressStart: (_) {
+                        if (b_btn_Mains) {
+                          valuedecrementLongPress('speed');
+                        }
+                      },
+                      onStirrerDecreament: () {
+                        if (b_btn_Mains) {
+                          setState(() {
+                            d_sv_stirrer =
+                                calc.valuedecrement('speed', d_sv_stirrer);
+                          });
+                        }
+                      },
+                      onStirrerIncLongPressStart: (_) {
+                        if (b_btn_Mains) {
+                          valueincrementLongPress('speed');
+                        }
+                      },
+                      onStirrerIncreament: () {
+                        if (b_btn_Mains) {
+                          setState(() {
+                            d_sv_stirrer =
+                                calc.valueincrement('speed', d_sv_stirrer);
+                          });
+                        }
+                      },
+                      autoJogButtonLabel: btns['btnAutojog']['btnState'],
+                      autoJogButtonColor: btns['btnAutojog']['btnColor'],
+                      liftDownButtonColor: btns['btnStirDown']['btnColor'],
+                      liftUpButtonColor: btns['btnStirUp']['btnColor'],
+                      liftPos: calc.liftPosition(d_pv_lift_pos),
+                      autoJogSetValue: d_sv_autojog.toString(),
+                      onLiftUpPress: b_btn_Mains ? () {} : null,
+                      onLiftDownPress: b_btn_Mains ? () {} : null,
+                      onAutoJogPress: b_btn_Mains
+                          ? () {
+                              setState(() {
+                                b_btn_Auto_Jog = btnState('autojog',
+                                    btns['btnAutojog'], b_btn_Auto_Jog);
+                                if (b_btn_Auto_Jog) {
+                                  autojogStartFn();
+                                } else {
+                                  b_auto_jog_timer = false;
+                                }
+                              });
+                            }
+                          : null,
+                      onAutoJogDecLongPressStart: (LongPressStartDetails) {
+                        if (b_btn_Mains) {
+                          valuedecrementLongPress('autojog');
+                        }
+                      },
+                      onAutoJogDecreament: () {
+                        if (b_btn_Mains) {
+                          setState(() {
+                            d_sv_autojog =
+                                calc.valuedecrement('autojog', d_sv_autojog);
+                          });
+                        }
+                      },
+                      onAutoJogIncLongPressStart: (LongPressStartDetails) {
+                        if (b_btn_Mains) {
+                          valueincrementLongPress('autojog');
+                        }
+                      },
+                      onAutoJogIncreament: () {
+                        if (b_btn_Mains) {
+                          setState(() {
+                            d_sv_autojog =
+                                calc.valueincrement('autojog', d_sv_autojog);
+                          });
+                        }
+                      },
+                      onLiftDownLongPressStart: (_) {
+                        if (b_btn_Mains) {
+                          setState(
+                            () {
+                              b_lift_pos_down = true;
+                              t_lift_down = Timer.periodic(
+                                  Duration(microseconds: 300), (timer) {
+                                btns['btnStirDown']['btnColor'] = AppColors.red;
+                                d_sv_lift_pos = 1;
+                              });
+                            },
+                          );
+                        }
+                      },
+                      onLiftDownLongPressEnd: (_) {
                         setState(
                           () {
-                            b_lift_pos_down = true;
-                            t_lift_down = Timer.periodic(
-                                Duration(microseconds: 300), (timer) {
-                              btns['btnStirDown']['btnColor'] = AppColors.red;
-                              d_sv_lift_pos = 1;
-                            });
+                            if (b_btn_Mains) {
+                              b_lift_pos_down = false;
+                              t_lift_down.cancel();
+                              d_sv_lift_pos = 0;
+                              btns['btnStirDown']['btnColor'] = AppColors.grey;
+                            }
                           },
                         );
-                      }
-                    },
-                    onLiftDownLongPressEnd: (_) {
-                      setState(
-                        () {
-                          if (b_btn_Mains) {
-                            b_lift_pos_down = false;
-                            t_lift_down.cancel();
+                      },
+                      onLiftUpLongPressEnd: (_) {
+                        if (b_btn_Mains) {
+                          setState(() {
+                            b_lift_pos_up = false;
+                            t_lift_up.cancel();
                             d_sv_lift_pos = 0;
-                            btns['btnStirDown']['btnColor'] = AppColors.grey;
-                          }
-                        },
-                      );
-                    },
-                    onLiftUpLongPressEnd: (_) {
-                      if (b_btn_Mains) {
-                        setState(() {
-                          b_lift_pos_up = false;
-                          t_lift_up.cancel();
-                          d_sv_lift_pos = 0;
-                          btns['btnStirUp']['btnColor'] = AppColors.grey;
-                        });
-                      }
-                    },
-                    onLiftUpLongPressStart: (_) {
-                      if (b_btn_Mains) {
-                        setState(() {
-                          b_lift_pos_up = true;
-                          t_lift_up =
-                              Timer.periodic(Duration(microseconds: 300), (t) {
-                            btns['btnStirUp']['btnColor'] = AppColors.red;
-                            d_sv_lift_pos = 2;
+                            btns['btnStirUp']['btnColor'] = AppColors.grey;
                           });
-                        });
-                      }
-                    },
-                    onLongPressEnd: (_) => longPressRelease(),
-                    calc: calc,
+                        }
+                      },
+                      onLiftUpLongPressStart: (_) {
+                        if (b_btn_Mains) {
+                          setState(() {
+                            b_lift_pos_up = true;
+                            t_lift_up = Timer.periodic(
+                                Duration(microseconds: 300), (t) {
+                              btns['btnStirUp']['btnColor'] = AppColors.red;
+                              d_sv_lift_pos = 2;
+                            });
+                          });
+                        }
+                      },
+                      onLongPressEnd: (_) => longPressRelease(),
+                      calc: calc,
+                    ),
                   ),
                 ],
               ),
@@ -1138,7 +1147,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                               ],
                             ),
                           ),
-                        ), //container4
+                        ),
                         Expanded(
                           flex: 6,
                           child: Container(
@@ -1790,8 +1799,7 @@ class _MainAppSampleState extends State<MainAppSample> {
         return debugging == 'Y'
             ? DebugConsole(rxDebugList: rxDebugList, txDebugList: txDebugList)
             : RecordScreen(
-                // isConnected: btns['btnMain']['btnState'] == 'Connected',
-                isConnected: true,
+                isConnected: btns['btnMain']['btnState'] == 'Connected',
                 isDebug: true,
                 isPourOpen: b_btn_Pour_Open,
                 isVaccumOn: b_btn_Vacuum_Pump,
@@ -1931,19 +1939,18 @@ class _MainAppSampleState extends State<MainAppSample> {
       } else if (selectedIndex == 5) {
         return HelpTab(helpFilePath: helpFilePath);
       } else if (selectedIndex == 6) {
+        print("Customer Details: $clientInfo");
         return CustomerDetails(
-          customerDetails: CustomerDetailsResponse(
-            college: clientInfo[0],
-            department: clientInfo[1],
-            policy: clientInfo[2],
-            policyNo: clientInfo[3],
-            machineNo: clientInfo[4],
-            isWarrentyExpired: warrantyStatus(clientInfo[5]),
-          ),
+          college: clientInfo[0],
+          department: clientInfo[1],
+          policy: clientInfo[2],
+          policyNo: clientInfo[3],
+          machineNo: clientInfo[4],
+          isWarrentyExpired: warrantyStatus(clientInfo[5]),
         );
       } else if (selectedIndex == 7) {
         return DataLogger(
-          isConnected: isConnected,
+          isConnected: btns['btnMain']['btnState'] == 'Connected',
           tempA: d_pv_data_logger_temp_a,
           tempB: d_pv_data_logger_temp_b,
           tempC: d_pv_data_logger_temp_c,
@@ -1977,14 +1984,12 @@ class _MainAppSampleState extends State<MainAppSample> {
           return HelpTab(helpFilePath: helpFilePath);
         } else if (selectedIndex == 6) {
           return CustomerDetails(
-            customerDetails: CustomerDetailsResponse(
-              college: clientInfo[0],
-              department: clientInfo[1],
-              policy: clientInfo[2],
-              policyNo: clientInfo[3],
-              machineNo: clientInfo[4],
-              isWarrentyExpired: warrantyStatus(clientInfo[5]),
-            ),
+            college: clientInfo[0],
+            department: clientInfo[1],
+            policy: clientInfo[2],
+            policyNo: clientInfo[3],
+            machineNo: clientInfo[4],
+            isWarrentyExpired: warrantyStatus(clientInfo[5]),
           );
         } else {
           return SettingsTab(
@@ -2538,6 +2543,18 @@ class _MainAppSampleState extends State<MainAppSample> {
     }
   }
 
+//Datalogger validation for peak values > 1200
+  int d_Validate_DataLog_Temp(int dNewValue, int dOldValue) {
+    int dReturnValue = 0;
+    if (dNewValue < 1000)
+      dReturnValue = dNewValue;
+    else if ((dNewValue >= 1000) && (dNewValue < 1200))
+      dReturnValue = 0;
+    else
+      dReturnValue = dOldValue;
+    return dReturnValue;
+  }
+
   void receiver(Uint8List event) {
     try {
       String s = String.fromCharCodes(event);
@@ -2592,8 +2609,8 @@ class _MainAppSampleState extends State<MainAppSample> {
   Future<void> displayText(String text) async {
     try {
       if (text != null || !text.isEmpty) {
-        // if ((text.length > 23) && (text.length < 33)) {
-        if ((text.length > 23) && (text.length < 33)) {
+        if ((text.length > 23) &&
+            (text.length < (b_data_logger_available ? 43 : 33))) {
           if (debugging == 'Y') {
             rxDataDebug(text);
           }
@@ -2719,6 +2736,30 @@ class _MainAppSampleState extends State<MainAppSample> {
                 b_stirrer_down = true;
               } else {
                 b_stirrer_down = false;
+              }
+              // For Data Logger
+              if (b_data_logger_available) {
+                d_pv_data_logger_temp_a = d_Validate_DataLog_Temp(
+                    int.parse(text.codeUnitAt(21).toString().padLeft(2, '0') +
+                        text.codeUnitAt(22).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_a);
+                d_pv_data_logger_temp_b = d_Validate_DataLog_Temp(
+                    int.parse(text.codeUnitAt(23).toString().padLeft(2, '0') +
+                        text.codeUnitAt(24).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_b);
+                d_pv_data_logger_temp_c = d_Validate_DataLog_Temp(
+                    int.parse(text.codeUnitAt(25).toString().padLeft(2, '0') +
+                        text.codeUnitAt(26).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_c);
+                d_pv_data_logger_temp_d = d_Validate_DataLog_Temp(
+                    int.parse(text.codeUnitAt(27).toString().padLeft(2, '0') +
+                        text.codeUnitAt(28).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_d);
+              } else {
+                d_pv_data_logger_temp_a = 30;
+                d_pv_data_logger_temp_b = 30;
+                d_pv_data_logger_temp_c = 30;
+                d_pv_data_logger_temp_d = 30;
               }
               // validaterxData(text);
               bDataReceived = true;

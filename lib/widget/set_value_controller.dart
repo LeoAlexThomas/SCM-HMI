@@ -23,10 +23,13 @@ class SetValueController extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        vertical: SizeConfig.screen_height * 1,
+        vertical: SizeConfig.screen_height * 0.5,
         horizontal: SizeConfig.screen_height * 1.5,
       ),
-      margin: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+      margin: EdgeInsets.symmetric(
+        horizontal: SizeConfig.screen_width * 1.5,
+        vertical: SizeConfig.screen_height * 0.5,
+      ),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.black),
       ),
