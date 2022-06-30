@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:StirCastingMachine/data/data.dart';
 import 'package:StirCastingMachine/local_storage.dart';
@@ -59,7 +60,7 @@ class _DataLoggerState extends State<DataLogger> {
       'Temp B',
       'Temp C',
       'Temp D',
-    ]
+    ],
   ];
 
   Widget _buildButton({
@@ -83,6 +84,22 @@ class _DataLoggerState extends State<DataLogger> {
         ),
       ),
     );
+  }
+
+  void onResetData() {
+    setState(() {
+      d_table_sino = 0;
+      rxdList = [];
+      excelFileContent = [
+        [
+          'Si_No',
+          'Temp A',
+          'Temp B',
+          'Temp C',
+          'Temp D',
+        ]
+      ];
+    });
   }
 
   @override
@@ -131,7 +148,7 @@ class _DataLoggerState extends State<DataLogger> {
                         setState(() {
                           b_start_record = !b_start_record;
                         });
-                        if (b_start_record) _updateTimer(_tableTimer!);
+                        if (b_start_record) _updateTimer(_tableTimer);
 
                         widget.onDataLoggerStart(b_start_record);
                       }
@@ -172,54 +189,40 @@ class _DataLoggerState extends State<DataLogger> {
                               );
                             }).toList(),
                             hint: Text('10 Sec'),
-                            onChanged: _updateTimer as void Function(String?)?,
+                            onChanged: _updateTimer,
                           ),
                         ),
                       ),
                       _buildButton(
                         buttonLabel: 'CLEAN',
                         buttonColor: AppColors.blue,
-                        onPressed: () {
-                          setState(
-                            () {
-                              d_table_sino = 0;
-                              rxdList = [];
-                              excelFileContent = [
-                                [
-                                  'Si_No',
-                                  'Temp A',
-                                  'Temp B',
-                                  'Temp C',
-                                  'Temp D',
-                                ]
-                              ];
-                            },
-                          );
-                        },
+                        onPressed: onResetData,
                       ),
                       _buildButton(
                         buttonLabel: 'EXPORT',
                         buttonColor: AppColors.blue,
-                        onPressed: () {
+                        onPressed: () async {
                           if (excelFileContent.length == 1) {
                             SnackbarService.showMessage(
                                 context, "Record is Empty");
                           } else {
                             String content = '';
+                            File? exportedFile;
                             excelFileContent.forEach((element) {
                               element.forEach((ele) {
                                 content += '${ele.toString()}\t';
                               });
                               content += '\n';
-                              dataLoggerFile.exportFile(content);
                             });
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  content: Text('Exported'),
-                                );
-                              },
+                            exportedFile = await dataLoggerFile
+                                .exportFile(excelFileContent.join(','));
+                            if (exportedFile == null) {
+                              return;
+                            }
+                            onResetData();
+                            SnackbarService.showMessage(
+                              context,
+                              "Data Logger file exported here: ${exportedFile.path}",
                             );
                           }
                         },
@@ -240,7 +243,7 @@ class _DataLoggerState extends State<DataLogger> {
     );
   }
 
-  void _updateTimer(String value) {
+  _updateTimer(String? value) {
     setState(() {
       _tableTimer = value;
       switch (_tableTimer) {

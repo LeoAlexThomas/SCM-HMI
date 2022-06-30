@@ -94,7 +94,7 @@ class _HelpTabState extends State<HelpTab> {
                     ),
                   ),
                   Text(
-                    'Ver #1.0.0.0',
+                    "Ver #2.0.0.0",
                     style: TextStyle(
                         fontSize: SizeConfig.font_height * 1.75,
                         fontStyle: FontStyle.italic),
@@ -204,6 +204,14 @@ class _HelpTabState extends State<HelpTab> {
                                   tabName: 'Connectivity',
                                   onTap: () {
                                     _b_software = false;
+                                    File wifiPdfFile = File(
+                                        '${widget.helpFilePath}/wifi_connection.pdf');
+                                    wifiConnectionPDF =
+                                        PDFView(filePath: wifiPdfFile.path);
+                                    File bluetoothPdfFile = File(
+                                        '${widget.helpFilePath}/bluetooth_connection.pdf');
+                                    bluetoothConnectionPDF = PDFView(
+                                        filePath: bluetoothPdfFile.path);
                                     setState(() {
                                       _helptabIndex = 1;
                                     });

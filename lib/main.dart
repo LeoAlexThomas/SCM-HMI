@@ -86,8 +86,7 @@ class _MainAppSampleState extends State<MainAppSample> {
   ];
   String wholemsg = '';
 
-  String warningText =
-      "No WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo Worry";
+  String warningText = "No Worry";
 
   bool b_admin_login = false;
 // btn State for sending
@@ -1258,6 +1257,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                           child: MarqueeText(
                             text: TextSpan(text: warningText),
                             speed: 30,
+                            alwaysScroll: true,
                           ),
                         )
                       ],

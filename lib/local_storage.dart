@@ -1,25 +1,26 @@
-import 'dart:async';
 import 'dart:core';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart';
 
+Future<String?> _localpath() async {
+  final directory = await getExternalStorageDirectory();
+  return directory?.path;
+}
+
+// For creating excel file or any type of file
+Future<File?> localFile(String fileName) async {
+  final path = await _localpath();
+  if (path == null) {
+    return null;
+  }
+  return File('$path/$fileName');
+}
+
 class AppConfigStorage {
-  Future<String> _localpath() async {
-    final directory =
-        await (getExternalStorageDirectory() as FutureOr<Directory>);
-    // print('${directory.absolute.path}/new_folder');
-    return directory.path;
-  }
-
-  Future<Uint8List> _localExcelfile() async {
-    final path = await _localpath();
-    print("config Path: $path");
-    return File('$path/config.xlsx').readAsBytes();
-  }
-
   // for read file from external storage
 
   Future<List?> readExcelFile() async {
@@ -30,7 +31,12 @@ class AppConfigStorage {
       List gasCalibrationValues = [];
       List sqzCalibrationValues = [];
       String? helpFilePath = '';
-      var excel = Excel.decodeBytes(await _localExcelfile());
+      final excelFile = await localFile("config.xlsx");
+      if (excelFile == null) {
+        return null;
+      }
+      final Uint8List excelFileConverted = await excelFile.readAsBytes();
+      var excel = Excel.decodeBytes(excelFileConverted);
 
       Sheet sheetObject = excel['Sheet1'];
       //below Getting cell(e.g. C3 position) by using sheetObject and adding cell's value to clientDetails List after getting cell from sheet
@@ -306,37 +312,37 @@ class AppConfigStorage {
 }
 
 class RecordStorage {
-  Future<String> _localpath() async {
-    final directory =
-        await (getExternalStorageDirectory() as FutureOr<Directory>);
-    return directory.path;
-  }
-
-  // For creating excel file or any type of file
-  Future<File> _localfile() async {
-    final path = await _localpath();
-    return File('$path/record.xls');
-  }
-
-  Future<File> _localExcelfile() async {
+  Future<File?> _localExcelfile() async {
     final path = await _localpath();
     print(path);
+    if (path == null) {
+      return null;
+    }
     String recordName =
         DateFormat('dd-mm-yyyy_hh:mm:ss').format(DateTime.now());
     return File('$path/SCM-Export_${recordName}.xls');
   }
 
-  exportFile(String str) async {
-    File f = await _localExcelfile();
-    f.writeAsString(str);
+  Future<File?> exportFile(String str) async {
+    File? file = await _localExcelfile();
+    if (file == null) {
+      LogEntryStorage().writeLogfile("Exported excel FILE PATH NOT FOUND");
+      return null;
+    }
+
+    return file.writeAsString(str);
     // print('content updated');
   }
 
   Future<String?> readRecord() async {
     try {
       // List item;
-      final file = await _localfile();
-
+      final file = await localFile("record.xls");
+      if (file == null) {
+        LogEntryStorage().writeLogfile(
+            'Execption in reading RECORD file: Record File not found');
+        return null;
+      }
       String content = await file.readAsString();
       return content;
     } catch (e) {
@@ -346,10 +352,17 @@ class RecordStorage {
 
   Future<File?> writeRecordfile(String st) async {
     try {
-      final file = await _localfile();
+      final file = await localFile("record.xls");
       // lst.every((element) {
       //   str += element.toString();
       // });
+
+      if (file == null) {
+        LogEntryStorage().writeLogfile(
+            'Execption in reading RECORD file: Record File not found');
+        return null;
+      }
+
       return file.writeAsString(st, mode: FileMode.append);
     } catch (e) {
       LogEntryStorage().writeLogfile('Execption in writing RECORD file: $e');
@@ -358,38 +371,44 @@ class RecordStorage {
 }
 
 class DataLoggerStorage {
-  Future<String> _localpath() async {
-    final directory =
-        await (getExternalStorageDirectory() as FutureOr<Directory>);
-    return directory.path;
-  }
-
-  // For creating excel file or any type of file
-  Future<File> _localfile() async {
+  Future<File?> _localExcelfile() async {
     final path = await _localpath();
-    return File('$path/DataLogger.xls');
-  }
-
-  Future<File> _localExcelfile() async {
-    final path = await _localpath();
-    print(path);
+    if (path == null) {
+      return null;
+    }
     String recordName =
         DateFormat('dd_mm_yyyy_hh_mm_ss').format(DateTime.now());
     return File('$path/SCM_DL_Export_${recordName}.xls');
   }
 
-  exportFile(String str) async {
-    File f = await _localExcelfile();
-    f.writeAsString(str);
+  Future<File?> exportFile(String str) async {
+    File? file = await _localExcelfile();
+    if (file == null) {
+      LogEntryStorage().writeLogfile(
+          'Execption in writing RECORD file: File path not found');
+      return null;
+    }
+    print("Exported successfully");
+    file.writeAsString(str);
+    final path = await _localpath();
+    log("$path");
+    String recordName =
+        DateFormat('dd_mm_yyyy_hh_mm_ss').format(DateTime.now());
+    return File('$path/SCM_DL_Export_${recordName}.xls');
     // print('content updated');
   }
 
   Future<File?> writeDataLoggerfile(String st) async {
     try {
-      final file = await _localfile();
+      final file = await localFile("DataLogger.xls");
       // lst.every((element) {
       //   str += element.toString();
       // });
+      if (file == null) {
+        LogEntryStorage().writeLogfile(
+            'Execption in writing RECORD file: File path not found');
+        return null;
+      }
       return file.writeAsString(st, mode: FileMode.append);
     } catch (e) {
       LogEntryStorage().writeLogfile('Execption in writing RECORD file: $e');
@@ -398,21 +417,13 @@ class DataLoggerStorage {
 }
 
 class LogEntryStorage {
-  Future<String> _localpath() async {
-    final directory =
-        await (getExternalStorageDirectory() as FutureOr<Directory>);
-    return directory.path;
-  }
-
-  Future<File> _localfile() async {
-    final path = await _localpath();
-    // print('$path/log.txt');
-    return File('$path/log.txt');
-  }
-
   Future<File?> writeLogfile(String st) async {
     try {
-      final file = await _localfile();
+      final file = await localFile("log.txt");
+      if (file == null) {
+        print('Execption in writing file: FILE NOT FOUND!!!!');
+        return null;
+      }
       st += '$st\n';
       return file.writeAsString(st, mode: FileMode.append);
     } catch (e) {
@@ -422,22 +433,15 @@ class LogEntryStorage {
 }
 
 class ConnectionStorage {
-  Future<String> _localpath() async {
-    final directory =
-        await (getExternalStorageDirectory() as FutureOr<Directory>);
-    return directory.path;
-  }
-
-  Future<File> _localfile() async {
-    final path = await _localpath();
-    return File('$path/connection.txt');
-  }
-
   Future<List?> readConnectionFile() async {
     try {
       // List item;
-      final file = await _localfile();
-
+      final file = await localFile("connection.txt");
+      if (file == null) {
+        LogEntryStorage().writeLogfile(
+            'Execption in reading Connection file: FILE NOT FOUND');
+        return null;
+      }
       String content = await file.readAsString();
       List con = content.split(',');
       return con;
@@ -449,7 +453,12 @@ class ConnectionStorage {
 
   Future<File?> writeConnectionFile(String st) async {
     try {
-      final file = await _localfile();
+      final file = await localFile("connection.txt");
+      if (file == null) {
+        LogEntryStorage().writeLogfile(
+            'Execption in reading Connection file: FILE NOT FOUND');
+        return null;
+      }
       return file.writeAsString(st);
     } catch (e) {
       LogEntryStorage()
@@ -459,20 +468,14 @@ class ConnectionStorage {
 }
 
 class PasswordStorage {
-  Future<String> _localpath() async {
-    final directory =
-        await (getExternalStorageDirectory() as FutureOr<Directory>);
-    return directory.path;
-  }
-
-  Future<File> _localfile() async {
-    final path = await _localpath();
-    return File('$path/pw.txt');
-  }
-
   Future<File?> writePasswordText(String st) async {
     try {
-      final file = await _localfile();
+      final file = await localFile("pw.txt");
+      if (file == null) {
+        LogEntryStorage()
+            .writeLogfile('Execption in reading Password file: FILE NOT FOUND');
+        return null;
+      }
       return file.writeAsString(st);
     } catch (e) {
       LogEntryStorage().writeLogfile('Execption in writing password file: $e');

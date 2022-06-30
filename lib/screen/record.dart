@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:StirCastingMachine/data/data.dart';
 import 'package:StirCastingMachine/local_storage.dart';
@@ -110,6 +111,27 @@ class _RecordScreenState extends State<RecordScreen> {
     );
   }
 
+  void onResetData() {
+    setState(() {
+      d_table_sino = 0;
+      rxdList = [];
+      excelFileContent = [
+        [
+          'Si_No',
+          'Time',
+          'Melt',
+          'Powder',
+          'Mould',
+          'Stirrer',
+          'Gas',
+          'Pour',
+          'Squeeze',
+          'Vaccum'
+        ]
+      ];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -156,7 +178,7 @@ class _RecordScreenState extends State<RecordScreen> {
                         setState(() {
                           b_start_record = !b_start_record;
                         });
-                        if (b_start_record) _updateTimer(_tableTimer!);
+                        if (b_start_record) _updateTimer(_tableTimer);
                       }
                     : null,
                 buttonLabel: b_start_record ? 'Stop Record' : 'Start Record',
@@ -194,62 +216,41 @@ class _RecordScreenState extends State<RecordScreen> {
                               );
                             }).toList(),
                             hint: Text('10 Sec'),
-                            onChanged: b_start_record
-                                ? null
-                                : _updateTimer as void Function(String?)?,
+                            onChanged: b_start_record ? null : _updateTimer,
                           ),
                         ),
                       ),
                       _buildButton(
                         buttonLabel: 'CLEAN',
                         buttonColor: AppColors.blue,
-                        onPressed: () {
-                          setState(
-                            () {
-                              d_table_sino = 0;
-                              rxdList = [];
-                              excelFileContent = [
-                                [
-                                  'Si_No',
-                                  'Time',
-                                  'Melt',
-                                  'Powder',
-                                  'Mould',
-                                  'Stirrer',
-                                  'Gas',
-                                  'Pour',
-                                  'Squeeze',
-                                  'Vaccum'
-                                ]
-                              ];
-                            },
-                          );
-                        },
+                        onPressed: onResetData,
                       ),
                       _buildButton(
                         buttonLabel: 'EXPORT',
                         buttonColor: AppColors.blue,
-                        onPressed: () {
+                        onPressed: () async {
                           if (excelFileContent.length == 1) {
                             SnackbarService.showMessage(
                                 context, "Record is Empty");
                           } else {
                             String content = '';
-                            excelFileContent.forEach((element) {
+                            File? exportedFile;
+                            excelFileContent.forEach((element) async {
                               element.forEach((ele) {
                                 content += '${ele.toString()}\t';
                               });
                               content += '\n';
-                              recordFile.exportFile(content);
+                              // exportedFile =
+                              //     await recordFile.exportFile(content);
                             });
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  content: Text('Exported'),
-                                );
-                              },
-                            );
+                            exportedFile = await recordFile
+                                .exportFile(excelFileContent.join(','));
+                            if (exportedFile == null) {
+                              return;
+                            }
+                            onResetData();
+                            SnackbarService.showMessage(context,
+                                "Record Exported to this path: ${exportedFile.path}");
                           }
                         },
                       ),
@@ -269,7 +270,7 @@ class _RecordScreenState extends State<RecordScreen> {
     );
   }
 
-  void _updateTimer(String value) {
+  void _updateTimer(String? value) {
     setState(() {
       _tableTimer = value;
       switch (_tableTimer) {
