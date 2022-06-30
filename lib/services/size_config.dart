@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class SizeConfig {
-  static double screen_width;
-  static double screen_height;
-  static double font_height;
+  static late double screen_width;
+  static late double screen_height;
+  static late double font_height;
 
   static void initSizeConfig(context) {
     screen_width = MediaQuery.of(context).size.width / 100;

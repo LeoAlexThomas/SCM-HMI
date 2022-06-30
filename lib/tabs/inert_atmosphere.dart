@@ -19,25 +19,25 @@ class InertAtmosphere extends StatelessWidget {
   final VoidCallback onGas1DecreasePress;
   final VoidCallback onGas2IncreasePress;
   final VoidCallback onGas2DecreasePress;
-  final VoidCallback inertGasPress;
-  final String buttonLabel;
-  final Color buttonColor;
+  final VoidCallback? inertGasPress;
+  final String? buttonLabel;
+  final Color? buttonColor;
   const InertAtmosphere({
-    Key key,
-    @required this.gasFlowPrescentValue,
-    @required this.gasFlowSetValue,
-    @required this.gas1SetValue,
-    @required this.gas2SetValue,
-    @required this.isPourShieldOpen,
-    @required this.onGasFlowIncreasePress,
-    @required this.onGasFlowDecreasePress,
-    @required this.onGas1IncreasePress,
-    @required this.onGas1DecreasePress,
-    @required this.onGas2IncreasePress,
-    @required this.onGas2DecreasePress,
-    @required this.inertGasPress,
-    @required this.buttonLabel,
-    @required this.buttonColor,
+    Key? key,
+    required this.gasFlowPrescentValue,
+    required this.gasFlowSetValue,
+    required this.gas1SetValue,
+    required this.gas2SetValue,
+    required this.isPourShieldOpen,
+    required this.onGasFlowIncreasePress,
+    required this.onGasFlowDecreasePress,
+    required this.onGas1IncreasePress,
+    required this.onGas1DecreasePress,
+    required this.onGas2IncreasePress,
+    required this.onGas2DecreasePress,
+    required this.inertGasPress,
+    required this.buttonLabel,
+    required this.buttonColor,
   }) : super(key: key);
 
   @override

@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 
 class InstructionTextView extends StatelessWidget {
   final String instruction;
-  final Color textColor;
+  final Color? textColor;
   const InstructionTextView({
-    @required this.instruction,
+    required this.instruction,
     this.textColor,
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override

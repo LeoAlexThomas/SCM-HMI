@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 class RecordScreen extends StatefulWidget {
   final bool isConnected;
+  final bool isMainOn;
   final bool isDebug;
   final bool isPourOpen;
   final bool isVaccumOn;
@@ -23,22 +24,23 @@ class RecordScreen extends StatefulWidget {
   final int centrifuge;
   final int sqzPresure;
   RecordScreen({
-    Key key,
-    @required this.isConnected,
-    @required this.isDebug,
-    @required this.isPourOpen,
-    @required this.isVaccumOn,
-    @required this.isGasAvaible,
-    @required this.isCentrifugeAvaible,
-    @required this.isSqueezeAvaible,
-    @required this.isVaccumAvaible,
-    @required this.melt,
-    @required this.powder,
-    @required this.mould,
-    @required this.stirrer,
-    @required this.gasFlow,
-    @required this.centrifuge,
-    @required this.sqzPresure,
+    Key? key,
+    required this.isConnected,
+    required this.isMainOn,
+    required this.isDebug,
+    required this.isPourOpen,
+    required this.isVaccumOn,
+    required this.isGasAvaible,
+    required this.isCentrifugeAvaible,
+    required this.isSqueezeAvaible,
+    required this.isVaccumAvaible,
+    required this.melt,
+    required this.powder,
+    required this.mould,
+    required this.stirrer,
+    required this.gasFlow,
+    required this.centrifuge,
+    required this.sqzPresure,
   }) : super(key: key);
 
   @override
@@ -47,11 +49,12 @@ class RecordScreen extends StatefulWidget {
 
 class _RecordScreenState extends State<RecordScreen> {
   final recordFile = RecordStorage();
+  final ScrollController recordScrollController = ScrollController();
   List<TableRow> rxdList = [];
 
-  Timer recordTimerEvent;
+  late Timer recordTimerEvent;
   bool b_start_record = false;
-  String _tableTimer;
+  String? _tableTimer;
   int d_table_sino = 0;
   List<String> recordTimer = [
     '1 Sec',
@@ -78,10 +81,16 @@ class _RecordScreenState extends State<RecordScreen> {
     ]
   ];
 
+  @override
+  void dispose() {
+    recordScrollController.dispose();
+    super.dispose();
+  }
+
   Widget _buildButton({
-    @required String buttonLabel,
-    @required Color buttonColor,
-    @required VoidCallback onPressed,
+    required String buttonLabel,
+    required Color buttonColor,
+    required VoidCallback? onPressed,
   }) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -118,6 +127,7 @@ class _RecordScreenState extends State<RecordScreen> {
         Expanded(
           child: Scrollbar(
             child: ListView(
+              controller: recordScrollController,
               children: [
                 Table(
                   border: TableBorder.all(
@@ -140,13 +150,15 @@ class _RecordScreenState extends State<RecordScreen> {
               height: SizeConfig.screen_height * 5,
               margin: EdgeInsets.only(left: SizeConfig.screen_width * 1),
               child: _buildButton(
-                buttonColor: b_start_record ? AppColors.red : AppColors.green,
-                onPressed: () {
-                  setState(() {
-                    b_start_record = !b_start_record;
-                  });
-                  if (b_start_record) _updateTimer(_tableTimer);
-                },
+                buttonColor: b_start_record ? AppColors.red! : AppColors.green,
+                onPressed: widget.isMainOn
+                    ? () {
+                        setState(() {
+                          b_start_record = !b_start_record;
+                        });
+                        if (b_start_record) _updateTimer(_tableTimer!);
+                      }
+                    : null,
                 buttonLabel: b_start_record ? 'Stop Record' : 'Start Record',
               ),
             ),
@@ -182,7 +194,9 @@ class _RecordScreenState extends State<RecordScreen> {
                               );
                             }).toList(),
                             hint: Text('10 Sec'),
-                            onChanged: b_start_record ? null : _updateTimer,
+                            onChanged: b_start_record
+                                ? null
+                                : _updateTimer as void Function(String?)?,
                           ),
                         ),
                       ),
@@ -353,6 +367,8 @@ class _RecordScreenState extends State<RecordScreen> {
         widget.isVaccumOn ? 'ON' : 'OFF'
       ]);
     }
+    recordScrollController
+        .jumpTo(recordScrollController.position.maxScrollExtent);
   }
 
   Widget _buildTableHeaderCell(String title) {

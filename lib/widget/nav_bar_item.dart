@@ -8,10 +8,10 @@ class NavBarItem extends StatelessWidget {
   final bool isSeleted;
   final bool isAvaiable;
   const NavBarItem({
-    Key key,
-    @required this.title,
-    @required this.onTap,
-    @required this.isSeleted,
+    Key? key,
+    required this.title,
+    required this.onTap,
+    required this.isSeleted,
     this.isAvaiable = true,
   }) : super(key: key);
 

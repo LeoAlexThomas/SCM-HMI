@@ -10,13 +10,13 @@ class CustomerDetails extends StatelessWidget {
   final int machineNo;
   final bool isWarrentyExpired;
   const CustomerDetails({
-    Key key,
-    @required this.college,
-    @required this.department,
-    @required this.policy,
-    @required this.policyNo,
-    @required this.machineNo,
-    @required this.isWarrentyExpired,
+    Key? key,
+    required this.college,
+    required this.department,
+    required this.policy,
+    required this.policyNo,
+    required this.machineNo,
+    required this.isWarrentyExpired,
   }) : super(key: key);
 
   @override

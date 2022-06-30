@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:StirCastingMachine/data/data.dart';
@@ -30,6 +31,7 @@ import 'package:StirCastingMachine/local_storage.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 // Calculation
 import 'package:StirCastingMachine/calculation.dart';
+import 'package:marquee_text/marquee_text.dart';
 
 void main() {
   try {
@@ -63,9 +65,9 @@ class _MainAppSampleState extends State<MainAppSample> {
   bool b_bluetoothConnection = false;
 
   FlutterBluetoothSerial bluetooth = FlutterBluetoothSerial.instance;
-  BluetoothConnection connection;
+  BluetoothConnection? connection;
   var calc = Calculation();
-  Timer timer, masterTimer;
+  late Timer timer, masterTimer;
   int d_table_sino = 0;
   String xlsContent = '';
   List excelFileContent = [
@@ -83,6 +85,9 @@ class _MainAppSampleState extends State<MainAppSample> {
     ]
   ];
   String wholemsg = '';
+
+  String warningText =
+      "No WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo WorryNo Worry";
 
   bool b_admin_login = false;
 // btn State for sending
@@ -169,9 +174,9 @@ class _MainAppSampleState extends State<MainAppSample> {
       d_pv_data_logger_temp_d = 30,
       d_pv_stirrer = 0,
       d_pv_lift_pos = 0,
-      d_pv_pour_pos,
       d_pv_UV_lift_pos = 0;
-  int d_pv_gas_flow, d_pv_sqz_prsr, d_pv_centrifuge;
+  int? d_pv_pour_pos;
+  int d_pv_gas_flow = 0, d_pv_sqz_prsr = 0, d_pv_centrifuge = 0;
   int d_sv_furnace = 800,
       d_sv_melt = 750,
       d_sv_powder = 200,
@@ -187,16 +192,16 @@ class _MainAppSampleState extends State<MainAppSample> {
       d_sv_gas_sf6 = 0;
   int d_rec_idx = 0;
   int dDataReceivedIndex = 0;
-  int d_stirrer_out = 1, d_centrifuge_out = 1;
+  int? d_stirrer_out = 1, d_centrifuge_out = 1;
   int d_stirrer_start_idx = 0;
   int d_cen_start_idx = 0;
-  int d_stirrer_min_val;
-  int d_stirrer_max_val;
-  int d_cen_min_val;
-  int d_cen_max_val;
-  int d_gas_delay;
-  int d_vacuum_delay;
-  String debugging;
+  int? d_stirrer_min_val;
+  int? d_stirrer_max_val;
+  late int d_cen_min_val;
+  int? d_cen_max_val;
+  int? d_gas_delay;
+  int? d_vacuum_delay;
+  String? debugging;
 
   int d_sampling_rate = 2000;
 
@@ -239,33 +244,18 @@ class _MainAppSampleState extends State<MainAppSample> {
   int d_sv_autojog = 2;
 
   // timer for long event
-  Timer t_lift_up;
-  Timer t_lift_down;
-  Timer t_uv_lift_up;
-  Timer t_uv_lift_down;
+  late Timer t_lift_up;
+  late Timer t_lift_down;
+  late Timer t_uv_lift_up;
+  late Timer t_uv_lift_down;
 
   // Buttons
   var btns = {
-    'btnMain': {
-      'btnState': 'ON',
-      'btnState': 'DisConnected',
-    },
-    'btnFurnace': {
-      'btnState': 'OFF',
-      'btnColor': Colors.grey[300],
-    },
-    'btnPowder': {
-      'btnState': 'OFF',
-      'btnColor': Colors.grey[300],
-    },
-    'btnMold': {
-      'btnState': 'OFF',
-      'btnColor': Colors.grey[300],
-    },
-    'btnRunway': {
-      'btnState': 'OFF',
-      'btnColor': Colors.grey[300],
-    },
+    'btnMain': {'btnState': 'DisConnected'},
+    'btnFurnace': {'btnState': 'OFF', 'btnColor': Colors.grey[300]},
+    'btnPowder': {'btnState': 'OFF', 'btnColor': Colors.grey[300]},
+    'btnMold': {'btnState': 'OFF', 'btnColor': Colors.grey[300]},
+    'btnRunway': {'btnState': 'OFF', 'btnColor': Colors.grey[300]},
     'btnPour': {'btnState': 'CLOSE', 'btnColor': Colors.grey[300]},
     'btnStir': {'btnState': 'OFF', 'btnColor': Colors.grey[300]},
     'btnStirUp': {'btnState': 'UP', 'btnColor': Colors.grey[300]},
@@ -281,7 +271,7 @@ class _MainAppSampleState extends State<MainAppSample> {
     'btnUV_DOWN': {'btnState': 'DOWN', 'btnColor': Colors.grey[300]},
   };
 
-  Socket socket;
+  late Socket socket;
   var sRxData = '';
   var sRxDataStart = '';
   var sRxDataMiddle = '';
@@ -318,20 +308,20 @@ class _MainAppSampleState extends State<MainAppSample> {
   List<Widget> txDebugList = [];
 
 // Configration Lists
-  List clientInfo = [];
-  List appconfig = [];
-  List gasCalValues = [];
-  List sqzCalValues = [];
+  List? clientInfo = [];
+  List? appconfig = [];
+  List? gasCalValues = [];
+  List? sqzCalValues = [];
   String helpFilePath = '';
   String alerm = '';
 
-  static const intromusic = "alert_sound/beep-13.mp3";
+  // static const intromusic = "alert_sound/beep-13.mp3";
 
   @override
   void dispose() {
     _iptxtcontroller.dispose();
-    connection.close();
-    connection.dispose();
+    connection?.close();
+    connection?.dispose();
     connection = null;
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
@@ -354,14 +344,14 @@ class _MainAppSampleState extends State<MainAppSample> {
 
     appConfigFile.readExcelFile().then((value) {
       try {
-        if ((value.length != 0) || (value != null)) {
+        if ((value != null) && (value.length != 0)) {
           clientInfo = value[0];
           appconfig = value[1];
           gasCalValues = value[2];
           sqzCalValues = value[3];
           helpFilePath = value[4];
 
-          var model = appconfig[0].toString().padLeft(7, '0');
+          var model = appconfig![0].toString().padLeft(7, '0');
           if (model.substring(0, 1) == '1') {
             b_inert_available = true;
           } else {
@@ -397,7 +387,7 @@ class _MainAppSampleState extends State<MainAppSample> {
           } else {
             b_data_logger_available = false;
           }
-          alerm = appconfig.last.toString().toUpperCase();
+          alerm = appconfig!.last.toString().toUpperCase();
           appConfigTextAssign();
         }
       } catch (e) {
@@ -465,13 +455,13 @@ class _MainAppSampleState extends State<MainAppSample> {
                   ),
                   color: Colors.grey[300],
                   child: Text(
-                    btns['btnMain']['btnState'],
+                    btns['btnMain']!['btnState'] as String,
                     textAlign: TextAlign.right,
                     style: TextStyle(
                       fontSize: SizeConfig.font_height * 2.65, //20
                       fontWeight: FontWeight.bold,
                       fontFamily: 'digital',
-                      color: btns['btnMain']['btnState'] == 'Connected'
+                      color: btns['btnMain']!['btnState'] == 'Connected'
                           ? AppColors.green
                           : AppColors.red,
                     ),
@@ -546,7 +536,13 @@ class _MainAppSampleState extends State<MainAppSample> {
                     bottom: SizeConfig.screen_height * 1,
                     right: SizeConfig.screen_width * 0.5,
                   ),
-                  child: RaisedButton(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      primary: AppColors.customRed,
+                      shape: new RoundedRectangleBorder(
+                        borderRadius: new BorderRadius.circular(30.0),
+                      ),
+                    ),
                     child: Text(
                       'Exit',
                       style: TextStyle(
@@ -557,10 +553,6 @@ class _MainAppSampleState extends State<MainAppSample> {
                     onPressed: () async {
                       exit(0);
                     },
-                    color: AppColors.customRed,
-                    shape: new RoundedRectangleBorder(
-                      borderRadius: new BorderRadius.circular(30.0),
-                    ),
                   ),
                 ),
               ],
@@ -663,7 +655,6 @@ class _MainAppSampleState extends State<MainAppSample> {
           Expanded(
             child: mainScreen(),
           ),
-          SizedBox(width: SizeConfig.screen_width * 1),
         ],
       );
     } catch (e) {
@@ -693,15 +684,19 @@ class _MainAppSampleState extends State<MainAppSample> {
                   SizedBox(
                     height: SizeConfig.screen_height * 38,
                     child: HeaterCard(
-                      furnaceButtonLabel: btns['btnFurnace']['btnState'],
+                      furnaceButtonLabel:
+                          btns['btnFurnace']!['btnState'] as String?,
                       isFurnaceOn: b_lbl_furnace,
-                      furnaceButtonColor: btns['btnFurnace']['btnColor'],
-                      powderButtonLabel: btns['btnPowder']['btnState'],
+                      furnaceButtonColor:
+                          btns['btnFurnace']!['btnColor'] as Color?,
+                      powderButtonLabel:
+                          btns['btnPowder']!['btnState'] as String?,
                       isPowderOn: b_lbl_powder,
-                      powderButtonColor: btns['btnPowder']['btnColor'],
-                      mouldButtonLabel: btns['btnMold']['btnState'],
+                      powderButtonColor:
+                          btns['btnPowder']!['btnColor'] as Color?,
+                      mouldButtonLabel: btns['btnMold']!['btnState'] as String?,
                       isMouldOn: b_lbl_mould,
-                      mouldButtonColor: btns['btnMold']['btnColor'],
+                      mouldButtonColor: btns['btnMold']!['btnColor'] as Color?,
                       furnacePrecentValue:
                           d_pv_furnace.toString().padLeft(4, '0'),
                       meltPrecentValue: d_pv_melt.toString().padLeft(4, '0'),
@@ -837,12 +832,12 @@ class _MainAppSampleState extends State<MainAppSample> {
                   SizedBox(
                     height: SizeConfig.screen_height * 18,
                     child: PouringCard(
-                      buttonLabel: btns['btnPour']['btnState'],
+                      buttonLabel: btns['btnPour']!['btnState'] as String?,
                       calc: calc,
-                      buttonColor: btns['btnPour']['btnColor'],
+                      buttonColor: btns['btnPour']!['btnColor'] as Color?,
                       operationName: '1) VALVE',
                       precentValue: calc.pourCondition(d_pv_pour_pos),
-                      setValue: btns['btnPour']['btnState'],
+                      setValue: btns['btnPour']!['btnState'] as String?,
                       onIncreament: () {
                         if ((b_btn_Mains) && (!b_btn_Mould)) {
                           d_sv_mould = calc.valueincrement('mold', d_sv_mould);
@@ -890,8 +885,10 @@ class _MainAppSampleState extends State<MainAppSample> {
                   SizedBox(
                     height: SizeConfig.screen_height * 31,
                     child: StirrerCard(
-                      stirrerButtonLabel: btns['btnStir']['btnState'],
-                      stirrerButtonColor: btns['btnStir']['btnColor'],
+                      stirrerButtonLabel:
+                          btns['btnStir']!['btnState'] as String?,
+                      stirrerButtonColor:
+                          btns['btnStir']!['btnColor'] as Color?,
                       stirrerPrecentValue:
                           d_pv_stirrer.toString().padLeft(4, '0'),
                       stirrerSetValue: d_sv_stirrer.toString().padLeft(4, '0'),
@@ -940,10 +937,14 @@ class _MainAppSampleState extends State<MainAppSample> {
                           });
                         }
                       },
-                      autoJogButtonLabel: btns['btnAutojog']['btnState'],
-                      autoJogButtonColor: btns['btnAutojog']['btnColor'],
-                      liftDownButtonColor: btns['btnStirDown']['btnColor'],
-                      liftUpButtonColor: btns['btnStirUp']['btnColor'],
+                      autoJogButtonLabel:
+                          btns['btnAutojog']!['btnState'] as String?,
+                      autoJogButtonColor:
+                          btns['btnAutojog']!['btnColor'] as Color?,
+                      liftDownButtonColor:
+                          btns['btnStirDown']!['btnColor'] as Color?,
+                      liftUpButtonColor:
+                          btns['btnStirUp']!['btnColor'] as Color?,
                       liftPos: calc.liftPosition(d_pv_lift_pos),
                       autoJogSetValue: d_sv_autojog.toString(),
                       onLiftUpPress: b_btn_Mains ? () {} : null,
@@ -994,7 +995,8 @@ class _MainAppSampleState extends State<MainAppSample> {
                               b_lift_pos_down = true;
                               t_lift_down = Timer.periodic(
                                   Duration(microseconds: 300), (timer) {
-                                btns['btnStirDown']['btnColor'] = AppColors.red;
+                                btns['btnStirDown']!['btnColor'] =
+                                    AppColors.red;
                                 d_sv_lift_pos = 1;
                               });
                             },
@@ -1008,7 +1010,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                               b_lift_pos_down = false;
                               t_lift_down.cancel();
                               d_sv_lift_pos = 0;
-                              btns['btnStirDown']['btnColor'] = AppColors.grey;
+                              btns['btnStirDown']!['btnColor'] = AppColors.grey;
                             }
                           },
                         );
@@ -1019,7 +1021,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                             b_lift_pos_up = false;
                             t_lift_up.cancel();
                             d_sv_lift_pos = 0;
-                            btns['btnStirUp']['btnColor'] = AppColors.grey;
+                            btns['btnStirUp']!['btnColor'] = AppColors.grey;
                           });
                         }
                       },
@@ -1029,7 +1031,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                             b_lift_pos_up = true;
                             t_lift_up = Timer.periodic(
                                 Duration(microseconds: 300), (t) {
-                              btns['btnStirUp']['btnColor'] = AppColors.red;
+                              btns['btnStirUp']!['btnColor'] = AppColors.red;
                               d_sv_lift_pos = 2;
                             });
                           });
@@ -1078,8 +1080,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(
-                                    height: SizeConfig.screen_height * 1.75),
+                                SizedBox(height: SizeConfig.screen_height * 1),
                                 Text(
                                   'Before HEATING (@COLD Conditions)',
                                   style: TextStyle(
@@ -1088,23 +1089,20 @@ class _MainAppSampleState extends State<MainAppSample> {
                                     color: Colors.blue[900],
                                   ),
                                 ),
-                                SizedBox(
-                                    height: SizeConfig.screen_height * 1.5),
+                                SizedBox(height: SizeConfig.screen_height * 1),
                                 InstructionTextView(
                                     instruction:
                                         'Clean the RETORT, BLADE, MELT TEMP. SENSOR  & MOLD with WET cloth and allow it to dry for 5 mins.'),
-                                SizedBox(
-                                    height: SizeConfig.screen_height * 0.5),
+                                SizedBox(height: SizeConfig.screen_height * 1),
                                 InstructionTextView(
                                     instruction:
                                         'Apply THIN layer of HIGH TEMPERATURE NON STICK COATING to the above parts'),
-                                SizedBox(
-                                    height: SizeConfig.screen_height * 0.5),
+                                SizedBox(height: SizeConfig.screen_height * 1),
                                 InstructionTextView(
                                     instruction:
                                         'When the FURNACE is heated, bring down the stirrer blade inside the retort to allow the non-stick coating to dry.'),
                                 SizedBox(
-                                    height: SizeConfig.screen_height * 1.75),
+                                    height: SizeConfig.screen_height * 1.25),
                                 Padding(
                                   padding: EdgeInsets.only(
                                       bottom: SizeConfig.screen_height * 0.5),
@@ -1117,8 +1115,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(
-                                    height: SizeConfig.screen_height * 1.25),
+                                SizedBox(height: SizeConfig.screen_height * 1),
                                 InstructionTextView(
                                   instruction: 'Lift the STIRRER UP.',
                                 ),
@@ -1219,7 +1216,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                                       ),
                                       SizedBox(
                                           height:
-                                              SizeConfig.screen_height * 2.0),
+                                              SizeConfig.screen_height * 1.25),
                                       Text(
                                         'DON’Ts',
                                         style: TextStyle(
@@ -1250,14 +1247,26 @@ class _MainAppSampleState extends State<MainAppSample> {
                               ],
                             ),
                           ),
-                        ), //container4
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(
+                            top: SizeConfig.screen_height * 1,
+                          ),
+                          color: Colors.white,
+                          width: SizeConfig.screen_width * 42,
+                          height: SizeConfig.screen_height * 5,
+                          child: MarqueeText(
+                            text: TextSpan(text: warningText),
+                            speed: 30,
+                          ),
+                        )
                       ],
                     ),
                   ),
                   Positioned.fill(
                     child: Container(
                       color:
-                          AppColors.grey.withOpacity(b_btn_Mains ? 0.0 : 0.5),
+                          AppColors.grey!.withOpacity(b_btn_Mains ? 0.0 : 0.5),
                     ),
                   ),
                 ],
@@ -1297,13 +1306,12 @@ class _MainAppSampleState extends State<MainAppSample> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 InertAtmosphere(
-                  gasFlowPrescentValue: d_pv_gas_flow == null
-                      ? '00'
-                      : d_pv_gas_flow.toString().padLeft(2, '0'),
+                  gasFlowPrescentValue:
+                      d_pv_gas_flow.toString().padLeft(2, '0'),
                   gasFlowSetValue: d_sv_gas_flow.toString(),
                   gas1SetValue: d_sv_gas_ar.toString(),
                   gas2SetValue: d_sv_gas_sf6.toString(),
-                  buttonColor: btns['btnGasFlow']['btnColor'],
+                  buttonColor: btns['btnGasFlow']!['btnColor'] as Color?,
                   isPourShieldOpen: b_btn_Inert_Gas && d_pv_pour_pos == 2,
                   onGasFlowIncreasePress: () {
                     if ((b_btn_Mains) &&
@@ -1365,7 +1373,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                       });
                     }
                   },
-                  buttonLabel: btns['btnGasFlow']['btnState'],
+                  buttonLabel: btns['btnGasFlow']!['btnState'] as String?,
                   inertGasPress: b_btn_Mains
                       ? () {
                           setState(() {
@@ -1416,15 +1424,17 @@ class _MainAppSampleState extends State<MainAppSample> {
                 children: [
                   SizedBox(height: SizeConfig.screen_height * 1.5),
                   SqueezeCard(
-                    runwayButtonLabel: btns['btnRunway']['btnState'],
-                    runwayButtonColor: btns['btnRunway']['btnColor'],
+                    runwayButtonLabel:
+                        btns['btnRunway']!['btnState'] as String?,
+                    runwayButtonColor: btns['btnRunway']!['btnColor'] as Color?,
                     isRunwayOn: b_lbl_runway,
-                    squeezeButtonLabel: btns['btnSqueezePump']['btnState'],
-                    squeezeButtonColor: btns['btnSqueezePump']['btnColor'],
+                    squeezeButtonLabel:
+                        btns['btnSqueezePump']!['btnState'] as String?,
+                    squeezeButtonColor:
+                        btns['btnSqueezePump']!['btnColor'] as Color?,
                     runwayPrecentValue: d_pv_runway.toString().padLeft(4, '0'),
                     runwaySetValue: d_sv_runway.toString().padLeft(4, '0'),
-                    squeezePrecentValue:
-                        d_pv_sqz_prsr == null ? "00" : d_pv_sqz_prsr.toString(),
+                    squeezePrecentValue: d_pv_sqz_prsr.toString(),
                     onRunwayPress: b_btn_Mains && b_squeeze_available
                         ? () {
                             setState(() {
@@ -1478,13 +1488,16 @@ class _MainAppSampleState extends State<MainAppSample> {
                   ),
                   SizedBox(height: SizeConfig.screen_height * 1.5),
                   OtherCard(
-                    centrifugeButtonLabel: btns['btnCentrifuge']['btnState'],
-                    vaccumPumpButtonLabel: btns['btnVaccumPump']['btnState'],
-                    centrifugeButtonColor: btns['btnCentrifuge']['btnColor'],
-                    vaccumButtonColor: btns['btnVaccumPump']['btnColor'],
-                    centrifugePrecentValue: d_pv_centrifuge == null
-                        ? "0000"
-                        : d_pv_centrifuge.toString().padLeft(4, '0'),
+                    centrifugeButtonLabel:
+                        btns['btnCentrifuge']!['btnState'] as String?,
+                    vaccumPumpButtonLabel:
+                        btns['btnVaccumPump']!['btnState'] as String?,
+                    centrifugeButtonColor:
+                        btns['btnCentrifuge']!['btnColor'] as Color?,
+                    vaccumButtonColor:
+                        btns['btnVaccumPump']!['btnColor'] as Color?,
+                    centrifugePrecentValue:
+                        d_pv_centrifuge.toString().padLeft(4, '0'),
                     centrifugeSetValue:
                         d_sv_centrifuge.toString().padLeft(4, '0'),
                     onCentrifugePress: b_btn_Mains && b_centrifugal_available
@@ -1493,7 +1506,8 @@ class _MainAppSampleState extends State<MainAppSample> {
                               if (!b_btn_Centrifugal) {
                                 b_btn_Centrifugal = btnState('centrifuge',
                                     btns['btnCentrifuge'], b_btn_Centrifugal);
-                                d_centrifuge_out += d_cen_min_val;
+                                d_centrifuge_out =
+                                    d_centrifuge_out ?? 0 + d_cen_min_val;
                               } else {
                                 d_pv_centrifuge = 0;
                                 b_btn_Centrifugal = btnState('centrifuge',
@@ -1552,16 +1566,18 @@ class _MainAppSampleState extends State<MainAppSample> {
                   ),
                   SizedBox(height: SizeConfig.screen_height * 1.5),
                   UltraSonicCard(
-                    powderVibButtonLabel: btns['btnPowderEMV']['btnState'],
-                    powderVibButtonColor: btns['btnPowderEMV']['btnColor'],
-                    uvEMVButtonLabel: btns['btnUV/EMV']['btnState'],
-                    uvEMVButtonColor: btns['btnUV/EMV']['btnColor'],
+                    powderVibButtonLabel:
+                        btns['btnPowderEMV']!['btnState'] as String?,
+                    powderVibButtonColor:
+                        btns['btnPowderEMV']!['btnColor'] as Color?,
+                    uvEMVButtonLabel: btns['btnUV/EMV']!['btnState'] as String?,
+                    uvEMVButtonColor: btns['btnUV/EMV']!['btnColor'] as Color?,
                     uvLiftPrecentValue: calc.uvliftPosition(d_pv_UV_lift_pos),
                     uvLiftUpLongPressStart: (_) {
                       setState(() {
                         t_uv_lift_up = Timer.periodic(
                             Duration(microseconds: 300), (timer) {
-                          btns['btnUV_UP']['btnColor'] = AppColors.red;
+                          btns['btnUV_UP']!['btnColor'] = AppColors.red;
                           d_sv_UV_lift_pos = 2;
                         });
                       });
@@ -1569,7 +1585,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                     uvLiftUpLongPressEnd: (_) {
                       setState(() {
                         t_uv_lift_up.cancel();
-                        btns['btnUV_UP']['btnColor'] = AppColors.grey;
+                        btns['btnUV_UP']!['btnColor'] = AppColors.grey;
                         d_sv_UV_lift_pos = 0;
                       });
                     },
@@ -1577,7 +1593,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                       setState(() {
                         t_uv_lift_down = Timer.periodic(
                             Duration(milliseconds: 300), (timer) {
-                          btns['btnUV_DOWN']['btnColor'] = AppColors.red;
+                          btns['btnUV_DOWN']!['btnColor'] = AppColors.red;
                           d_sv_UV_lift_pos = 1;
                         });
                       });
@@ -1586,7 +1602,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                       setState(() {
                         t_uv_lift_down.cancel();
                         d_sv_UV_lift_pos = 0;
-                        btns['btnUV_DOWN']['btnColor'] = AppColors.grey;
+                        btns['btnUV_DOWN']!['btnColor'] = AppColors.grey;
                       });
                     },
                     onPowderVibPress: b_btn_Mains && b_powder_vib_available
@@ -1605,8 +1621,9 @@ class _MainAppSampleState extends State<MainAppSample> {
                             });
                           }
                         : null,
-                    liftUpButtonColor: btns['btnUV_UP']['btnColor'],
-                    liftDownButtonColor: btns['btnUV_DOWN']['btnColor'],
+                    liftUpButtonColor: btns['btnUV_UP']!['btnColor'] as Color?,
+                    liftDownButtonColor:
+                        btns['btnUV_DOWN']!['btnColor'] as Color?,
                     onUVLiftDownPress:
                         b_btn_Mains && b_uv_vib_available ? () {} : null,
                     onUVLiftUpPress:
@@ -1799,7 +1816,8 @@ class _MainAppSampleState extends State<MainAppSample> {
         return debugging == 'Y'
             ? DebugConsole(rxDebugList: rxDebugList, txDebugList: txDebugList)
             : RecordScreen(
-                isConnected: btns['btnMain']['btnState'] == 'Connected',
+                isConnected: btns['btnMain']!['btnState'] == 'Connected',
+                isMainOn: b_btn_Mains,
                 isDebug: true,
                 isPourOpen: b_btn_Pour_Open,
                 isVaccumOn: b_btn_Vacuum_Pump,
@@ -1817,18 +1835,18 @@ class _MainAppSampleState extends State<MainAppSample> {
               );
       } else if (selectedIndex == 4) {
         return SettingsTab(
-          appConfig: appconfig,
+          appConfig: appconfig!,
           onUpdate: () {
             setState(() {
               appConfigFile.readExcelFile().then((value) {
-                if ((value.length != 0) || (value != null)) {
+                if ((value != null) && (value.length != 0)) {
                   clientInfo = value[0];
                   appconfig = value[1];
                   gasCalValues = value[2];
                   sqzCalValues = value[3];
                 }
                 appConfigTextAssign();
-                var model = appconfig[0].toString().padLeft(6, '0');
+                var model = appconfig![0].toString().padLeft(6, '0');
                 if (model.substring(0, 1) == '0') {
                   b_inert_available = false;
                 } else {
@@ -1891,14 +1909,14 @@ class _MainAppSampleState extends State<MainAppSample> {
                     keyboardType: TextInputType.number,
                   ),
                   actions: [
-                    FlatButton(
+                    TextButton(
                       onPressed: () {
                         wifiConnection(_iptxtcontroller.text);
                         Navigator.pop(context);
                       },
                       child: Text('ok'),
                     ),
-                    FlatButton(
+                    TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: Text('close'),
                     ),
@@ -1918,19 +1936,15 @@ class _MainAppSampleState extends State<MainAppSample> {
               await bluetooth.requestEnable();
             }
             var devices = await bluetooth.getBondedDevices();
-            if (devices != null) {
-              return showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text('Bluetooth paired'),
-                    content: setupAlertBox(devices),
-                  );
-                },
-              );
-            } else {
-              return showAlertMessage('No Paried devices found');
-            }
+            return showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Bluetooth paired'),
+                  content: setupAlertBox(devices),
+                );
+              },
+            );
           },
           isWifiConnected: b_wifiConnection,
           isBluetoothConnected: b_bluetoothConnection,
@@ -1941,20 +1955,26 @@ class _MainAppSampleState extends State<MainAppSample> {
       } else if (selectedIndex == 6) {
         print("Customer Details: $clientInfo");
         return CustomerDetails(
-          college: clientInfo[0],
-          department: clientInfo[1],
-          policy: clientInfo[2],
-          policyNo: clientInfo[3],
-          machineNo: clientInfo[4],
-          isWarrentyExpired: warrantyStatus(clientInfo[5]),
+          college: clientInfo![0],
+          department: clientInfo![1],
+          policy: clientInfo![2],
+          policyNo: clientInfo![3],
+          machineNo: clientInfo![4],
+          isWarrentyExpired: warrantyStatus(clientInfo![5]),
         );
       } else if (selectedIndex == 7) {
         return DataLogger(
-          isConnected: btns['btnMain']['btnState'] == 'Connected',
+          isConnected: btns['btnMain']!['btnState'] == 'Connected',
+          isMainOn: b_btn_Mains,
           tempA: d_pv_data_logger_temp_a,
           tempB: d_pv_data_logger_temp_b,
           tempC: d_pv_data_logger_temp_c,
           tempD: d_pv_data_logger_temp_d,
+          onDataLoggerStart: (dataStartedValue) {
+            setState(() {
+              b_btn_Data_Logger = dataStartedValue;
+            });
+          },
         );
       }
     } else {
@@ -1984,27 +2004,27 @@ class _MainAppSampleState extends State<MainAppSample> {
           return HelpTab(helpFilePath: helpFilePath);
         } else if (selectedIndex == 6) {
           return CustomerDetails(
-            college: clientInfo[0],
-            department: clientInfo[1],
-            policy: clientInfo[2],
-            policyNo: clientInfo[3],
-            machineNo: clientInfo[4],
-            isWarrentyExpired: warrantyStatus(clientInfo[5]),
+            college: clientInfo![0],
+            department: clientInfo![1],
+            policy: clientInfo![2],
+            policyNo: clientInfo![3],
+            machineNo: clientInfo![4],
+            isWarrentyExpired: warrantyStatus(clientInfo![5]),
           );
         } else {
           return SettingsTab(
-            appConfig: appconfig,
+            appConfig: appconfig!,
             onUpdate: () {
               setState(() {
                 appConfigFile.readExcelFile().then((value) {
-                  if ((value.length != 0) || (value != null)) {
+                  if ((value != null) && (value.length != 0)) {
                     clientInfo = value[0];
                     appconfig = value[1];
                     gasCalValues = value[2];
                     sqzCalValues = value[3];
                   }
                   appConfigTextAssign();
-                  var model = appconfig[0].toString().padLeft(6, '0');
+                  var model = appconfig![0].toString().padLeft(6, '0');
                   if (model.substring(0, 1) == '0') {
                     b_inert_available = false;
                   } else {
@@ -2067,14 +2087,14 @@ class _MainAppSampleState extends State<MainAppSample> {
                       keyboardType: TextInputType.number,
                     ),
                     actions: [
-                      FlatButton(
+                      TextButton(
                         onPressed: () {
                           wifiConnection(_iptxtcontroller.text);
                           Navigator.pop(context);
                         },
                         child: Text('ok'),
                       ),
-                      FlatButton(
+                      TextButton(
                         onPressed: () => Navigator.pop(context),
                         child: Text('close'),
                       ),
@@ -2094,19 +2114,15 @@ class _MainAppSampleState extends State<MainAppSample> {
                 await bluetooth.requestEnable();
               }
               var devices = await bluetooth.getBondedDevices();
-              if (devices != null) {
-                return showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Bluetooth paired'),
-                      content: setupAlertBox(devices),
-                    );
-                  },
-                );
-              } else {
-                return showAlertMessage('No Paried devices found');
-              }
+              return showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Bluetooth paired'),
+                    content: setupAlertBox(devices),
+                  );
+                },
+              );
             },
             isWifiConnected: b_wifiConnection,
             isBluetoothConnected: b_bluetoothConnection,
@@ -2342,7 +2358,7 @@ class _MainAppSampleState extends State<MainAppSample> {
               itemCount: devices.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(devices[index].name),
+                  title: Text(devices[index].name!),
                   onTap: () => bluetoothConnection(devices[index]),
                 );
               },
@@ -2366,10 +2382,10 @@ class _MainAppSampleState extends State<MainAppSample> {
       Navigator.pop(context);
       try {
         if (connection != null) {
-          connection.input.listen((Uint8List data) async {
+          connection?.input?.listen((Uint8List data) async {
             receiver(data);
           }).onDone(() {
-            connection.finish();
+            connection?.finish();
           });
         } else {
           print('Connection becomes to null');
@@ -2383,12 +2399,12 @@ class _MainAppSampleState extends State<MainAppSample> {
         try {
           var sendMsg = transX();
           txd = 'xxx@SEUP${sendMsg}e#end\n';
-          if (debugging.toUpperCase() == 'Y') {
+          if (debugging!.toUpperCase() == 'Y') {
             txDataDebug(transX());
           }
           if (connection != null) {
-            connection.output.add(utf8.encode(txd + '\r\n'));
-            await connection.output.allSent;
+            connection?.output.add(utf8.encode(txd + '\r\n') as Uint8List);
+            await connection?.output.allSent;
           } else {
             print('connection becomes to null');
           }
@@ -2430,11 +2446,11 @@ class _MainAppSampleState extends State<MainAppSample> {
       });
       try {
         if (connection != null) {
-          connection.input.listen((Uint8List data) async {
+          connection?.input!.listen((Uint8List data) async {
             receiver(data);
           }).onDone(() {
             // Bluetooth disconnected
-            connection.finish();
+            connection?.finish();
           });
         } else {
           print('connection becomes to null');
@@ -2448,12 +2464,12 @@ class _MainAppSampleState extends State<MainAppSample> {
         try {
           var sendMsg = transX();
           txd = 'xxx@SEUP${sendMsg}e#end\n';
-          if (debugging.toUpperCase() == 'Y') {
+          if (debugging!.toUpperCase() == 'Y') {
             txDataDebug(transX());
           }
           if (connection != null) {
-            connection.output.add(utf8.encode(txd + '\r\n'));
-            await connection.output.allSent;
+            connection?.output.add(utf8.encode(txd + '\r\n') as Uint8List);
+            await connection?.output.allSent;
           } else {
             print('connection becomes to null');
           }
@@ -2509,7 +2525,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                 },
                 child: Text('OK'),
               ),
-              FlatButton(
+              TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text('CANCEL'))
             ],
@@ -2558,6 +2574,14 @@ class _MainAppSampleState extends State<MainAppSample> {
   void receiver(Uint8List event) {
     try {
       String s = String.fromCharCodes(event);
+      log("Data: ${s.indexOf("e")}");
+      if ((s.substring(0, 4) == "ccc@") &&
+          (b_data_logger_available
+              ? s.substring(44, 47) == "eee"
+              : s.substring(35, 38) == "eee")) {
+        displayText(s);
+        return;
+      }
       if (s.contains('@')) {
         var startIdx = s.indexOf("@");
         if (!s.endsWith('@')) {
@@ -2608,167 +2632,173 @@ class _MainAppSampleState extends State<MainAppSample> {
 
   Future<void> displayText(String text) async {
     try {
-      if (text != null || !text.isEmpty) {
-        if ((text.length > 23) &&
-            (text.length < (b_data_logger_available ? 43 : 33))) {
-          if (debugging == 'Y') {
-            rxDataDebug(text);
-          }
-          setState(
-            () {
-              d_pv_furnace = dvalidateTemperature(
-                  int.parse(
-                    text.codeUnitAt(0).toString().padLeft(2, '0') +
-                        text.codeUnitAt(1).toString().padLeft(2, '0'),
-                  ),
-                  d_pv_furnace);
-              d_pv_melt = dvalidateTemperature(
-                  int.parse(
-                    text.codeUnitAt(2).toString().padLeft(2, '0') +
-                        text.codeUnitAt(3).toString().padLeft(2, '0'),
-                  ),
-                  d_pv_melt);
-              d_pv_powder = dvalidateTemperature(
-                  int.parse(
-                    text.codeUnitAt(4).toString().padLeft(2, '0') +
-                        text.codeUnitAt(5).toString().padLeft(2, '0'),
-                  ),
-                  d_pv_powder);
-              d_pv_mould = dvalidateTemperature(
-                  int.parse(
-                    text.codeUnitAt(6).toString().padLeft(2, '0') +
-                        text.codeUnitAt(7).toString().padLeft(2, '0'),
-                  ),
-                  d_pv_mould);
-              if (b_squeeze_available) {
-                d_pv_runway = dvalidateTemperature(
-                    int.parse(
-                      text.codeUnitAt(8).toString().padLeft(2, '0') +
-                          text.codeUnitAt(9).toString().padLeft(2, '0'),
-                    ),
-                    d_pv_runway);
-              }
-              // d_pv_spare = text.codeUnitAt(10) + text.codeUnitAt(11);
-              d_pv_stirrer = stirValidate(
-                  int.parse(
-                    text.codeUnitAt(12).toString().padLeft(2, '0') +
-                        text.codeUnitAt(13).toString().padLeft(2, '0'),
-                  ),
-                  d_pv_stirrer);
-              if (!b_btn_Stirrer) {
-                setState(() {
-                  d_pv_stirrer = 0;
-                });
-              }
+      if (!text.isEmpty) {
+        // if ((text.length > 23) &&
+        //     (text.length < (b_data_logger_available ? 51 : 33))) {
+        final intialIndex = text.indexOf('@');
+        text =
+            text.substring(intialIndex + 1, b_data_logger_available ? 46 : 33);
 
-              if (b_centrifugal_available) {
-                d_pv_centrifuge = int.parse(
-                    text.codeUnitAt(14).toString().padLeft(2, '0') +
-                        text.codeUnitAt(15).toString().padLeft(2, '0'));
-                if (!b_btn_Centrifugal) {
-                  d_pv_centrifuge = 0;
-                }
-              } else {
+        log("Last char:$text");
+        if (debugging == 'Y') {
+          rxDataDebug(text);
+        }
+        // log("${text.codeUnitAt(0)}${text.codeUnitAt(1)} - ${text.codeUnitAt(2)}${text.codeUnitAt(3)} - ${text.codeUnitAt(4)}${text.codeUnitAt(5)} - ${text.codeUnitAt(6)}${text.codeUnitAt(7)} - ${text.codeUnitAt(8)}${text.codeUnitAt(9)} - ${text.codeUnitAt(10)}${text.codeUnitAt(11)} - ");
+        setState(
+          () {
+            d_pv_furnace = dvalidateTemperature(
+                int.parse(
+                  text.codeUnitAt(0).toString().padLeft(2, '0') +
+                      text.codeUnitAt(1).toString().padLeft(2, '0'),
+                ),
+                d_pv_furnace);
+            d_pv_melt = dvalidateTemperature(
+                int.parse(
+                  text.codeUnitAt(2).toString().padLeft(2, '0') +
+                      text.codeUnitAt(3).toString().padLeft(2, '0'),
+                ),
+                d_pv_melt);
+            d_pv_powder = dvalidateTemperature(
+                int.parse(
+                  text.codeUnitAt(4).toString().padLeft(2, '0') +
+                      text.codeUnitAt(5).toString().padLeft(2, '0'),
+                ),
+                d_pv_powder);
+            d_pv_mould = dvalidateTemperature(
+                int.parse(
+                  text.codeUnitAt(6).toString().padLeft(2, '0') +
+                      text.codeUnitAt(7).toString().padLeft(2, '0'),
+                ),
+                d_pv_mould);
+            if (b_squeeze_available) {
+              d_pv_runway = dvalidateTemperature(
+                  int.parse(
+                    text.codeUnitAt(8).toString().padLeft(2, '0') +
+                        text.codeUnitAt(9).toString().padLeft(2, '0'),
+                  ),
+                  d_pv_runway);
+            }
+            // d_pv_spare = text.codeUnitAt(10) + text.codeUnitAt(11);
+            d_pv_stirrer = stirValidate(
+                int.parse(
+                  text.codeUnitAt(12).toString().padLeft(2, '0') +
+                      text.codeUnitAt(13).toString().padLeft(2, '0'),
+                ),
+                d_pv_stirrer);
+            if (!b_btn_Stirrer) {
+              setState(() {
+                d_pv_stirrer = 0;
+              });
+            }
+
+            if (b_centrifugal_available) {
+              d_pv_centrifuge = int.parse(
+                  text.codeUnitAt(14).toString().padLeft(2, '0') +
+                      text.codeUnitAt(15).toString().padLeft(2, '0'));
+              if (!b_btn_Centrifugal) {
                 d_pv_centrifuge = 0;
               }
+            } else {
+              d_pv_centrifuge = 0;
+            }
 
-              if (b_inert_available) {
-                d_pv_gas_flow = int.parse(
-                    text.codeUnitAt(16).toString().padLeft(2, '0') +
-                        text.codeUnitAt(17).toString().padLeft(2, '0'));
-                d_pv_gas_flow = dCalibratedGasValue(d_pv_gas_flow);
-              } else {
-                d_pv_gas_flow = 0;
-              }
+            if (b_inert_available) {
+              d_pv_gas_flow = int.parse(
+                  text.codeUnitAt(16).toString().padLeft(2, '0') +
+                      text.codeUnitAt(17).toString().padLeft(2, '0'));
+              d_pv_gas_flow = dCalibratedGasValue(d_pv_gas_flow);
+            } else {
+              d_pv_gas_flow = 0;
+            }
 
-              if (b_squeeze_available) {
-                d_pv_sqz_prsr = dCalibratedSqzPrsrValue(
-                    int.parse(
-                      text.codeUnitAt(18).toString().padLeft(2, '0') +
-                          text.codeUnitAt(19).toString().padLeft(2, '0'),
-                    ),
-                    d_pv_sqz_prsr);
-              } else {
-                d_pv_sqz_prsr = 0;
-              }
-              // Getting the 20th character and
-              // Converting the string to int and
-              // then convert to binary using bulid in method called 'toRadixString()'
-              var sig = text.codeUnitAt(20).toRadixString(2);
-              sig = sig.padLeft(6, '0');
+            if (b_squeeze_available) {
+              d_pv_sqz_prsr = dCalibratedSqzPrsrValue(
+                  int.parse(
+                    text.codeUnitAt(18).toString().padLeft(2, '0') +
+                        text.codeUnitAt(19).toString().padLeft(2, '0'),
+                  ),
+                  d_pv_sqz_prsr);
+            } else {
+              d_pv_sqz_prsr = 0;
+            }
+            // Getting the 20th character and
+            // Converting the string to int and
+            // then convert to binary using bulid in method called 'toRadixString()'
+            var sig = text.codeUnitAt(20).toRadixString(2);
+            sig = sig.padLeft(6, '0');
 
-              if (b_uv_vib_available) {
-                if (int.parse(sig.substring(0, 1)) == 1) {
-                  //Sgnal 1 & UV up
-                  d_pv_UV_lift_pos = 1;
-                } else if (int.parse(sig.substring(1, 2)) == 1) {
-                  //Sgnal 2 & UV down
-                  d_pv_UV_lift_pos = 2;
-                } else {
-                  // in Operation
-                  d_pv_UV_lift_pos = 0;
-                }
+            if (b_uv_vib_available) {
+              if (int.parse(sig.substring(0, 1)) == 1) {
+                //Sgnal 1 & UV up
+                d_pv_UV_lift_pos = 1;
+              } else if (int.parse(sig.substring(1, 2)) == 1) {
+                //Sgnal 2 & UV down
+                d_pv_UV_lift_pos = 2;
               } else {
+                // in Operation
                 d_pv_UV_lift_pos = 0;
               }
+            } else {
+              d_pv_UV_lift_pos = 0;
+            }
 
-              if (int.parse(sig.substring(2, 3)) == 1) {
-                //Sgnal 3 & Stir down
-                d_pv_lift_pos = 1;
-              } else if (int.parse(sig.substring(3, 4)) == 1) {
-                //Sgnal 4 & Stir up
-                d_pv_lift_pos = 2;
-              } else {
-                // in Operation
-                d_pv_lift_pos = 0;
-              }
-              if (int.parse(sig.substring(4, 5)) == 1) {
-                //Sgnal 5 & Pour close
-                d_pv_pour_pos = 1;
-              } else if (int.parse(sig.substring(5, 6)) == 1) {
-                //Sgnal 6 & Pour open
-                d_pv_pour_pos = 2;
-              } else {
-                // in Operation
-                d_pv_pour_pos = 0;
-              }
-              if (d_pv_lift_pos == 1) {
-                b_stirrer_down = true;
-              } else {
-                b_stirrer_down = false;
-              }
-              // For Data Logger
-              if (b_data_logger_available) {
-                d_pv_data_logger_temp_a = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(21).toString().padLeft(2, '0') +
-                        text.codeUnitAt(22).toString().padLeft(2, '0')),
-                    d_pv_data_logger_temp_a);
-                d_pv_data_logger_temp_b = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(23).toString().padLeft(2, '0') +
-                        text.codeUnitAt(24).toString().padLeft(2, '0')),
-                    d_pv_data_logger_temp_b);
-                d_pv_data_logger_temp_c = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(25).toString().padLeft(2, '0') +
-                        text.codeUnitAt(26).toString().padLeft(2, '0')),
-                    d_pv_data_logger_temp_c);
-                d_pv_data_logger_temp_d = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(27).toString().padLeft(2, '0') +
-                        text.codeUnitAt(28).toString().padLeft(2, '0')),
-                    d_pv_data_logger_temp_d);
-              } else {
-                d_pv_data_logger_temp_a = 30;
-                d_pv_data_logger_temp_b = 30;
-                d_pv_data_logger_temp_c = 30;
-                d_pv_data_logger_temp_d = 30;
-              }
-              // validaterxData(text);
-              bDataReceived = true;
-            },
-          );
-        } else {
-          LogEntryStorage().writeLogfile(
-              'Data not in a given limit: ${text.codeUnits}\nData length: ${text.length}');
-        }
+            if (int.parse(sig.substring(2, 3)) == 1) {
+              //Sgnal 3 & Stir down
+              d_pv_lift_pos = 1;
+            } else if (int.parse(sig.substring(3, 4)) == 1) {
+              //Sgnal 4 & Stir up
+              d_pv_lift_pos = 2;
+            } else {
+              // in Operation
+              d_pv_lift_pos = 0;
+            }
+            if (int.parse(sig.substring(4, 5)) == 1) {
+              //Sgnal 5 & Pour close
+              d_pv_pour_pos = 1;
+            } else if (int.parse(sig.substring(5, 6)) == 1) {
+              //Sgnal 6 & Pour open
+              d_pv_pour_pos = 2;
+            } else {
+              // in Operation
+              d_pv_pour_pos = 0;
+            }
+            if (d_pv_lift_pos == 1) {
+              b_stirrer_down = true;
+            } else {
+              b_stirrer_down = false;
+            }
+            // For Data Logger
+            if (b_data_logger_available) {
+              d_pv_data_logger_temp_a = d_Validate_DataLog_Temp(
+                  int.parse(text.codeUnitAt(31).toString().padLeft(2, '0') +
+                      text.codeUnitAt(32).toString().padLeft(2, '0')),
+                  d_pv_data_logger_temp_a);
+              d_pv_data_logger_temp_b = d_Validate_DataLog_Temp(
+                  int.parse(text.codeUnitAt(33).toString().padLeft(2, '0') +
+                      text.codeUnitAt(34).toString().padLeft(2, '0')),
+                  d_pv_data_logger_temp_b);
+              d_pv_data_logger_temp_c = d_Validate_DataLog_Temp(
+                  int.parse(text.codeUnitAt(35).toString().padLeft(2, '0') +
+                      text.codeUnitAt(36).toString().padLeft(2, '0')),
+                  d_pv_data_logger_temp_c);
+              d_pv_data_logger_temp_d = d_Validate_DataLog_Temp(
+                  int.parse(text.codeUnitAt(37).toString().padLeft(2, '0') +
+                      text.codeUnitAt(38).toString().padLeft(2, '0')),
+                  d_pv_data_logger_temp_d);
+            } else {
+              d_pv_data_logger_temp_a = 30;
+              d_pv_data_logger_temp_b = 30;
+              d_pv_data_logger_temp_c = 30;
+              d_pv_data_logger_temp_d = 30;
+            }
+            // validaterxData(text);
+            bDataReceived = true;
+          },
+        );
+        // } else {
+        //   LogEntryStorage().writeLogfile(
+        //       'Data not in a given limit: ${text.codeUnits}\nData length: ${text.length}');
+        // }
       }
     } catch (e) {
       if (!errMsgDisplaytext) {
@@ -2783,116 +2813,107 @@ class _MainAppSampleState extends State<MainAppSample> {
   // Sending Data
 
   String transX() {
-    try {
-      int T1 = 48;
-      int T2 = 48;
-      int T3 = 48;
-      int T4 = 48;
-      int H1 = 48;
-      int R1 = 48;
-      int D1 = 48;
-      if (b_btn_Mains) {
-        T1 += 1;
-        // Heater Outputs
-        if (bFurnaceHeatOUT) H1 += 1;
-        if (bPowderHeatOUT) H1 += 2;
-        if (bMouldHeatOUT) H1 += 4;
-        if (bRunwayHeatOUT) H1 += 8;
+    int T1 = 48;
+    int T2 = 48;
+    int T3 = 48;
+    int T4 = 48;
+    int H1 = 48;
+    int R1 = 48;
+    int D1 = 48;
+    if (b_btn_Mains) {
+      T1 += 1;
+      // Heater Outputs
+      if (bFurnaceHeatOUT) H1 += 1;
+      if (bPowderHeatOUT) H1 += 2;
+      if (bMouldHeatOUT) H1 += 4;
+      if (bRunwayHeatOUT) H1 += 8;
 
-        if (b_btn_Stirrer) R1 += 4; //R7
-        if (b_btn_Centrifugal) R1 += 2;
+      if (b_btn_Stirrer) R1 += 4; //R7
+      if (b_btn_Centrifugal) R1 += 2;
 
-        // Hydraulic Pump
-        if (b_btn_Sqz_Pump) T4 += 4;
+      // Hydraulic Pump
+      if (b_btn_Sqz_Pump) T4 += 4;
 
-        //Data Logger Attachment
-        if (b_data_logger_available) //check if attachment is enabled
-        if (b_btn_Data_Logger) // check if button is clicked
-          T4 = T4 + 8; // Command
+      //Data Logger Attachment
+      if (b_data_logger_available) //check if attachment is enabled
+      if (b_btn_Data_Logger) // check if button is clicked
+        T4 = T4 + 8; // Command
 
-        // Vacuum Pump  (or) vacuum solinoid
-        if (b_btn_Vacuum_Pump) T3 += 4;
+      // Vacuum Pump  (or) vacuum solinoid
+      if (b_btn_Vacuum_Pump) T3 += 4;
 
-        if (d_pv_furnace > 650) {
-          // Bottom Pouring Opne Close
-          if (b_btn_Pour_Open)
-            T1 += 2; //Pour open
-          else
-            T1 += 4; //Pour close
-        }
-
-        //STIRRER LIFT POSITION
-        //if d_sv_lift_pos=0  --> OFF
-        // if d_sv_lift_pos=1 --> DOWN
-        //if d_sv_lift_pos=2 --> UP
-        if ((b_btn_Auto_Jog) || (b_lift_pos_up) || (b_lift_pos_down)) {
-          if (d_sv_lift_pos == 1) //Down
-            T2 += 1;
-          else if (d_sv_lift_pos == 2) //Up
-            T1 += 8;
-        }
-
-        // Inert Gas
-        if (b_gas_out) {
-          //Gas Retort
-          T2 += 8;
-          if (b_SF6) // gas2
-            T2 += 4;
-          if (b_Ar) // gas1
-            T2 += 2;
-        }
-
-        // Pouring Gas Shield
-        if (b_btn_Pour_Open) {
-          if (b_B_Gas_Out) T3 += 1;
-        }
-
-        //UV LIFT POSITION
-        //if d_sv_UV_lift_pos=0  --> OFF
-        // if d_sv_UV_lift_pos=1 --> DOWN
-        //if d_sv_UV_lift_pos=2 --> UP
-        if (d_sv_UV_lift_pos == 1) //Down
-          T4 += 2;
-        else if (d_sv_UV_lift_pos == 2) //Up
-          T4 += 1;
-        if (b_btn_EM_Vibrator) T3 += 8;
-        if (b_btn_PowderEMV) R1 += 1;
+      if (d_pv_furnace > 650) {
+        // Bottom Pouring Opne Close
+        if (b_btn_Pour_Open)
+          T1 += 2; //Pour open
+        else
+          T1 += 4; //Pour close
       }
 
-      // converting current values to ascii and sending to terminal
-      var ac1 = new String.fromCharCode(T1);
-      var ac2 = new String.fromCharCode(T2);
-      var ac3 = new String.fromCharCode(T3);
-      var ac4 = new String.fromCharCode(T4);
-      var h1 = new String.fromCharCode(H1);
-      var r1 = new String.fromCharCode(R1);
-      var d1 = new String.fromCharCode(D1);
-      var stir = new String.fromCharCode(
-          d_stirrer_out == 13 ? d_stirrer_out + 1 : d_stirrer_out);
-      var cent = new String.fromCharCode(
-          d_centrifuge_out == 13 ? d_centrifuge_out + 1 : d_centrifuge_out);
-      return (ac1 + ac2 + ac3 + ac4 + h1 + r1 + d1 + stir + cent);
-    } catch (e) {
-      if (!errMsgtransX) {
-        logFile.writeLogfile('Exception in transX: $e');
-        setState(() {
-          errMsgtransX = true;
-        });
+      //STIRRER LIFT POSITION
+      //if d_sv_lift_pos=0  --> OFF
+      // if d_sv_lift_pos=1 --> DOWN
+      //if d_sv_lift_pos=2 --> UP
+      if ((b_btn_Auto_Jog) || (b_lift_pos_up) || (b_lift_pos_down)) {
+        if (d_sv_lift_pos == 1) //Down
+          T2 += 1;
+        else if (d_sv_lift_pos == 2) //Up
+          T1 += 8;
       }
+
+      // Inert Gas
+      if (b_gas_out) {
+        //Gas Retort
+        T2 += 8;
+        if (b_SF6) // gas2
+          T2 += 4;
+        if (b_Ar) // gas1
+          T2 += 2;
+      }
+
+      // Pouring Gas Shield
+      if (b_btn_Pour_Open) {
+        if (b_B_Gas_Out) T3 += 1;
+      }
+
+      //UV LIFT POSITION
+      //if d_sv_UV_lift_pos=0  --> OFF
+      // if d_sv_UV_lift_pos=1 --> DOWN
+      //if d_sv_UV_lift_pos=2 --> UP
+      if (d_sv_UV_lift_pos == 1) //Down
+        T4 += 2;
+      else if (d_sv_UV_lift_pos == 2) //Up
+        T4 += 1;
+      if (b_btn_EM_Vibrator) T3 += 8;
+      if (b_btn_PowderEMV) R1 += 1;
     }
+
+    // converting current values to ascii and sending to terminal
+    var ac1 = new String.fromCharCode(T1);
+    var ac2 = new String.fromCharCode(T2);
+    var ac3 = new String.fromCharCode(T3);
+    var ac4 = new String.fromCharCode(T4);
+    var h1 = new String.fromCharCode(H1);
+    var r1 = new String.fromCharCode(R1);
+    var d1 = new String.fromCharCode(D1);
+    var stir = new String.fromCharCode(
+        d_stirrer_out == 13 ? d_stirrer_out! + 1 : d_stirrer_out!);
+    var cent = new String.fromCharCode(
+        d_centrifuge_out == 13 ? d_centrifuge_out! + 1 : d_centrifuge_out!);
+    return (ac1 + ac2 + ac3 + ac4 + h1 + r1 + d1 + stir + cent);
   }
 
   int dCalibratedGasValue(int dPVvalue) {
     int dreturnvalue = 0;
     try {
-      if (dPVvalue <= gasCalValues.first) {
+      if (dPVvalue <= gasCalValues!.first) {
         dreturnvalue = 0;
-      } else if (dPVvalue > gasCalValues.last) {
+      } else if (dPVvalue > gasCalValues!.last) {
         dreturnvalue = 99;
       } else {
-        for (int i = 1; i < gasCalValues.length; i++) {
-          if ((dPVvalue > gasCalValues[i - 1]) &&
-              (dPVvalue <= gasCalValues[i])) {
+        for (int i = 1; i < gasCalValues!.length; i++) {
+          if ((dPVvalue > gasCalValues![i - 1]) &&
+              (dPVvalue <= gasCalValues![i])) {
             dreturnvalue = i;
           }
         }
@@ -2913,14 +2934,14 @@ class _MainAppSampleState extends State<MainAppSample> {
     //Changes Ends - Venkat
     try {
       // print('Squeeze Cal: $sqzCalValues');
-      if (dPVvalue <= sqzCalValues.first) {
+      if (dPVvalue <= sqzCalValues!.first) {
         dreturnvalue = 0;
-      } else if (dPVvalue > sqzCalValues.last + 50) {
+      } else if (dPVvalue > sqzCalValues!.last + 50) {
         dreturnvalue = dOVvalue; //display Old value
       } else {
-        for (int i = 1; i < sqzCalValues.length; i++) {
-          if ((dPVvalue > sqzCalValues[i - 1]) &&
-              (dPVvalue <= sqzCalValues[i])) {
+        for (int i = 1; i < sqzCalValues!.length; i++) {
+          if ((dPVvalue > sqzCalValues![i - 1]) &&
+              (dPVvalue <= sqzCalValues![i])) {
             dreturnvalue = i;
           }
         }
@@ -2935,7 +2956,7 @@ class _MainAppSampleState extends State<MainAppSample> {
 
   void sTxMsg(sendMsg) {
     try {
-      String txtime = DateFormat('hh:mm:ss').format(DateTime.now());
+      // String txtime = DateFormat('hh:mm:ss').format(DateTime.now());
       print('SendingMsg: $sendMsg');
       txd = 'xxx@SEUP${sendMsg}e#end';
       socket.write(txd);
@@ -2951,17 +2972,17 @@ class _MainAppSampleState extends State<MainAppSample> {
 
   appConfigTextAssign() {
     setState(() {
-      dFurnaceMaxTime = appconfig[1];
-      dPowderMaxTime = appconfig[2];
-      dMouldMaxTime = appconfig[3];
-      dRunwayMaxTime = appconfig[4];
-      d_stirrer_min_val = appconfig[5];
-      d_stirrer_max_val = appconfig[6];
-      d_cen_min_val = appconfig[7];
-      d_cen_max_val = appconfig[8];
-      debugging = appconfig[9];
-      d_gas_delay = appconfig[10];
-      d_vacuum_delay = appconfig[11];
+      dFurnaceMaxTime = appconfig![1];
+      dPowderMaxTime = appconfig![2];
+      dMouldMaxTime = appconfig![3];
+      dRunwayMaxTime = appconfig![4];
+      d_stirrer_min_val = appconfig![5];
+      d_stirrer_max_val = appconfig![6];
+      d_cen_min_val = appconfig![7];
+      d_cen_max_val = appconfig![8];
+      debugging = appconfig![9];
+      d_gas_delay = appconfig![10];
+      d_vacuum_delay = appconfig![11];
     });
   }
 
@@ -2969,15 +2990,14 @@ class _MainAppSampleState extends State<MainAppSample> {
     try {
       setState(() {
         appConfigTextAssign();
-
         if (bDataReceived) {
-          btns['btnMain']['btnState'] = 'Connected';
+          btns['btnMain']!['btnState'] = 'Connected';
           dDataReceivedIndex = 0;
           b_ringtone = false;
         } else {
           dDataReceivedIndex++;
           if (dDataReceivedIndex >= 10) {
-            btns['btnMain']['btnState'] = 'DisConnected';
+            btns['btnMain']!['btnState'] = 'DisConnected';
             dDataReceivedIndex = 0;
             b_ringtone = true;
             // b_start_autoConnect = false;
@@ -3039,18 +3059,24 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         //For Furnace
         if (b_btn_Furance) {
-          dFurnaceOut = calc.temp_CalOutPercent(
-              d_pv_furnace, d_sv_furnace, dFurnaceMaxTime, 0);
-          dFurnaceOFFTime = (10 - dFurnaceOut);
-          dFurnaceONTime = (10 - dFurnaceOFFTime);
-          dFurnaceCounter++;
-          if (dFurnaceCounter <= dFurnaceONTime)
-            bFurnaceHeatOUT = true;
-          else
+          if (d_pv_furnace == 0 || d_pv_melt == 0) {
+            if (d_pv_furnace == 0) warningText += "Check Furnace plug";
+            if (d_pv_melt == 0) warningText += "Check Melt plug";
             bFurnaceHeatOUT = false;
-          if (dFurnaceCounter == 10) dFurnaceCounter = 0;
-          if ((d_pv_furnace >= d_sv_furnace) || (d_pv_melt >= d_sv_melt))
-            bFurnaceHeatOUT = false;
+          } else {
+            dFurnaceOut = calc.temp_CalOutPercent(
+                d_pv_furnace, d_sv_furnace, dFurnaceMaxTime, 0);
+            dFurnaceOFFTime = (10 - dFurnaceOut);
+            dFurnaceONTime = (10 - dFurnaceOFFTime);
+            dFurnaceCounter++;
+            if (dFurnaceCounter <= dFurnaceONTime)
+              bFurnaceHeatOUT = true;
+            else
+              bFurnaceHeatOUT = false;
+            if (dFurnaceCounter == 10) dFurnaceCounter = 0;
+            if ((d_pv_furnace >= d_sv_furnace) || (d_pv_melt >= d_sv_melt))
+              bFurnaceHeatOUT = false;
+          }
         }
         if (bFurnaceHeatOUT) {
           b_lbl_furnace = true;
@@ -3059,17 +3085,22 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         //For Powder
         if (b_btn_Powder) {
-          dPowderOut = calc.temp_CalOutPercent(
-              d_pv_powder, d_sv_powder, dPowderMaxTime, 0);
-          dPowderOFFTime = (10 - dPowderOut);
-          dPowderONTime = (10 - dPowderOFFTime);
-          dPowderCounter++;
-          if (dPowderCounter <= dPowderONTime)
-            bPowderHeatOUT = true;
-          else
+          if (d_pv_powder == 0) {
+            warningText += "Check Powder plug";
             bPowderHeatOUT = false;
-          if (dPowderCounter == 10) dPowderCounter = 0;
-          if (d_pv_powder >= d_sv_powder) bPowderHeatOUT = false;
+          } else {
+            dPowderOut = calc.temp_CalOutPercent(
+                d_pv_powder, d_sv_powder, dPowderMaxTime, 0);
+            dPowderOFFTime = (10 - dPowderOut);
+            dPowderONTime = (10 - dPowderOFFTime);
+            dPowderCounter++;
+            if (dPowderCounter <= dPowderONTime)
+              bPowderHeatOUT = true;
+            else
+              bPowderHeatOUT = false;
+            if (dPowderCounter == 10) dPowderCounter = 0;
+            if (d_pv_powder >= d_sv_powder) bPowderHeatOUT = false;
+          }
         }
         if (bPowderHeatOUT) {
           b_lbl_powder = true;
@@ -3078,17 +3109,22 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         //For Mould
         if (b_btn_Mould) {
-          dMouldOut =
-              calc.temp_CalOutPercent(d_pv_mould, d_sv_mould, dMouldMaxTime, 0);
-          dMouldOFFTime = (10 - dMouldOut);
-          dMouldONTime = (10 - dMouldOFFTime);
-          dMouldCounter++;
-          if (dMouldCounter <= dMouldONTime)
-            bMouldHeatOUT = true;
-          else
+          if (d_pv_mould == 0) {
+            warningText += "Check Mould plug";
             bMouldHeatOUT = false;
-          if (dMouldCounter == 10) dMouldCounter = 0;
-          if (d_pv_mould >= d_sv_mould) bMouldHeatOUT = false;
+          } else {
+            dMouldOut = calc.temp_CalOutPercent(
+                d_pv_mould, d_sv_mould, dMouldMaxTime, 0);
+            dMouldOFFTime = (10 - dMouldOut);
+            dMouldONTime = (10 - dMouldOFFTime);
+            dMouldCounter++;
+            if (dMouldCounter <= dMouldONTime)
+              bMouldHeatOUT = true;
+            else
+              bMouldHeatOUT = false;
+            if (dMouldCounter == 10) dMouldCounter = 0;
+            if (d_pv_mould >= d_sv_mould) bMouldHeatOUT = false;
+          }
         }
         if (bMouldHeatOUT) {
           b_lbl_mould = true;
@@ -3097,17 +3133,22 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         //For Runway
         if (b_btn_Runway) {
-          dRunwayOut = calc.temp_CalOutPercent(
-              d_pv_runway, d_sv_runway, dRunwayMaxTime, 0);
-          dRunwayOFFTime = (10 - dRunwayOut);
-          dRunwayONTime = (10 - dRunwayOFFTime);
-          dRunwayCounter++;
-          if (dRunwayCounter <= dRunwayONTime)
-            bRunwayHeatOUT = true;
-          else
+          if (d_pv_runway == 0) {
+            warningText += "Check Runway plug";
             bRunwayHeatOUT = false;
-          if (dRunwayCounter == 10) dRunwayCounter = 0;
-          if (d_pv_runway >= d_sv_runway) bRunwayHeatOUT = false;
+          } else {
+            dRunwayOut = calc.temp_CalOutPercent(
+                d_pv_runway, d_sv_runway, dRunwayMaxTime, 0);
+            dRunwayOFFTime = (10 - dRunwayOut);
+            dRunwayONTime = (10 - dRunwayOFFTime);
+            dRunwayCounter++;
+            if (dRunwayCounter <= dRunwayONTime)
+              bRunwayHeatOUT = true;
+            else
+              bRunwayHeatOUT = false;
+            if (dRunwayCounter == 10) dRunwayCounter = 0;
+            if (d_pv_runway >= d_sv_runway) bRunwayHeatOUT = false;
+          }
         }
         if (bRunwayHeatOUT) {
           b_lbl_runway = true;
@@ -3158,10 +3199,9 @@ class _MainAppSampleState extends State<MainAppSample> {
         if (b_btn_Stirrer) {
           if (d_stirrer_start_idx > 8) {
             // print('Stirrer from mastertimer: $d_pv_stirrer');
-            d_stirrer_out = d_stirrer_out +
+            d_stirrer_out = d_stirrer_out! +
                 calc.d_Calculate_Stirrer_Out(d_pv_stirrer, d_sv_stirrer);
-            if (d_stirrer_out > d_stirrer_max_val)
-              d_stirrer_out = d_stirrer_max_val;
+            if (d_stirrer_out! <= 8) d_stirrer_out = 8;
             d_stirrer_start_idx = 0;
           } else
             d_stirrer_start_idx++;
@@ -3169,15 +3209,16 @@ class _MainAppSampleState extends State<MainAppSample> {
           d_stirrer_out = 1;
         if (b_btn_Centrifugal) {
           if (d_cen_start_idx > 4) {
-            d_centrifuge_out = d_centrifuge_out +
+            d_centrifuge_out = d_centrifuge_out! +
                 calc.d_Calculate_Stirrer_Out(d_pv_centrifuge, d_sv_centrifuge);
-            if (d_centrifuge_out > d_cen_max_val)
+            if (d_centrifuge_out! > d_cen_max_val!)
               d_centrifuge_out = d_cen_max_val;
             d_cen_start_idx = 0;
           } else
             d_cen_start_idx++;
         } else
           d_centrifuge_out = 1;
+        if (warningText.isEmpty) warningText = "No worrys !!!";
       });
     } catch (e) {
       if (!errMsgMasterTimer) {

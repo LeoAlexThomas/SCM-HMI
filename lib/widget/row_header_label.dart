@@ -6,8 +6,8 @@ class RowHeaderLabel extends StatelessWidget {
   final String rowTitle;
   final bool isRunning;
   const RowHeaderLabel({
-    Key key,
-    @required this.rowTitle,
+    Key? key,
+    required this.rowTitle,
     this.isRunning = false,
   }) : super(key: key);
 

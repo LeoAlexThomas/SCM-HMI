@@ -1,14 +1,15 @@
+import 'dart:async';
 import 'dart:core';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart';
 
 class AppConfigStorage {
   Future<String> _localpath() async {
-    final directory = await getExternalStorageDirectory();
+    final directory =
+        await (getExternalStorageDirectory() as FutureOr<Directory>);
     // print('${directory.absolute.path}/new_folder');
     return directory.path;
   }
@@ -21,14 +22,14 @@ class AppConfigStorage {
 
   // for read file from external storage
 
-  Future<List> readExcelFile() async {
+  Future<List?> readExcelFile() async {
     try {
       // For Config excel file
       List clientDetails = [];
       List mechineDetails = [];
       List gasCalibrationValues = [];
       List sqzCalibrationValues = [];
-      String helpFilePath = '';
+      String? helpFilePath = '';
       var excel = Excel.decodeBytes(await _localExcelfile());
 
       Sheet sheetObject = excel['Sheet1'];
@@ -306,7 +307,8 @@ class AppConfigStorage {
 
 class RecordStorage {
   Future<String> _localpath() async {
-    final directory = await getExternalStorageDirectory();
+    final directory =
+        await (getExternalStorageDirectory() as FutureOr<Directory>);
     return directory.path;
   }
 
@@ -330,7 +332,7 @@ class RecordStorage {
     // print('content updated');
   }
 
-  Future<String> readRecord() async {
+  Future<String?> readRecord() async {
     try {
       // List item;
       final file = await _localfile();
@@ -342,7 +344,47 @@ class RecordStorage {
     }
   }
 
-  Future<File> writeRecordfile(String st) async {
+  Future<File?> writeRecordfile(String st) async {
+    try {
+      final file = await _localfile();
+      // lst.every((element) {
+      //   str += element.toString();
+      // });
+      return file.writeAsString(st, mode: FileMode.append);
+    } catch (e) {
+      LogEntryStorage().writeLogfile('Execption in writing RECORD file: $e');
+    }
+  }
+}
+
+class DataLoggerStorage {
+  Future<String> _localpath() async {
+    final directory =
+        await (getExternalStorageDirectory() as FutureOr<Directory>);
+    return directory.path;
+  }
+
+  // For creating excel file or any type of file
+  Future<File> _localfile() async {
+    final path = await _localpath();
+    return File('$path/DataLogger.xls');
+  }
+
+  Future<File> _localExcelfile() async {
+    final path = await _localpath();
+    print(path);
+    String recordName =
+        DateFormat('dd_mm_yyyy_hh_mm_ss').format(DateTime.now());
+    return File('$path/SCM_DL_Export_${recordName}.xls');
+  }
+
+  exportFile(String str) async {
+    File f = await _localExcelfile();
+    f.writeAsString(str);
+    // print('content updated');
+  }
+
+  Future<File?> writeDataLoggerfile(String st) async {
     try {
       final file = await _localfile();
       // lst.every((element) {
@@ -357,7 +399,8 @@ class RecordStorage {
 
 class LogEntryStorage {
   Future<String> _localpath() async {
-    final directory = await getExternalStorageDirectory();
+    final directory =
+        await (getExternalStorageDirectory() as FutureOr<Directory>);
     return directory.path;
   }
 
@@ -367,7 +410,7 @@ class LogEntryStorage {
     return File('$path/log.txt');
   }
 
-  Future<File> writeLogfile(String st) async {
+  Future<File?> writeLogfile(String st) async {
     try {
       final file = await _localfile();
       st += '$st\n';
@@ -380,7 +423,8 @@ class LogEntryStorage {
 
 class ConnectionStorage {
   Future<String> _localpath() async {
-    final directory = await getExternalStorageDirectory();
+    final directory =
+        await (getExternalStorageDirectory() as FutureOr<Directory>);
     return directory.path;
   }
 
@@ -389,7 +433,7 @@ class ConnectionStorage {
     return File('$path/connection.txt');
   }
 
-  Future<List> readConnectionFile() async {
+  Future<List?> readConnectionFile() async {
     try {
       // List item;
       final file = await _localfile();
@@ -403,7 +447,7 @@ class ConnectionStorage {
     }
   }
 
-  Future<File> writeConnectionFile(String st) async {
+  Future<File?> writeConnectionFile(String st) async {
     try {
       final file = await _localfile();
       return file.writeAsString(st);
@@ -416,7 +460,8 @@ class ConnectionStorage {
 
 class PasswordStorage {
   Future<String> _localpath() async {
-    final directory = await getExternalStorageDirectory();
+    final directory =
+        await (getExternalStorageDirectory() as FutureOr<Directory>);
     return directory.path;
   }
 
@@ -425,7 +470,7 @@ class PasswordStorage {
     return File('$path/pw.txt');
   }
 
-  Future<File> writePasswordText(String st) async {
+  Future<File?> writePasswordText(String st) async {
     try {
       final file = await _localfile();
       return file.writeAsString(st);

@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 
 class HelpTab extends StatefulWidget {
-  final String helpFilePath;
-  HelpTab({Key key, @required this.helpFilePath}) : super(key: key);
+  final String? helpFilePath;
+  HelpTab({Key? key, required this.helpFilePath}) : super(key: key);
 
   @override
   State<HelpTab> createState() => _HelpTabState();
@@ -22,21 +22,21 @@ class _HelpTabState extends State<HelpTab> {
   bool b_helpBluetoothTab = false;
   bool b_helpSerialPortTab = false;
 
-  Widget wifiConnectionPDF;
-  Widget bluetoothConnectionPDF;
-  Widget serialportConnectionPDF;
+  late Widget wifiConnectionPDF;
+  late Widget bluetoothConnectionPDF;
+  late Widget serialportConnectionPDF;
 
-  Widget prequisitesPDF;
-  Widget technicalPDF;
-  Widget operationPDF;
-  Widget attachmentsPDF;
-  Widget safetyPDF;
-  Widget faqsPDF;
+  late Widget prequisitesPDF;
+  late Widget technicalPDF;
+  late Widget operationPDF;
+  late Widget attachmentsPDF;
+  late Widget safetyPDF;
+  late Widget faqsPDF;
 
   Widget _buildTabs({
-    @required String tabName,
-    @required VoidCallback onTap,
-    @required bool isSelected,
+    required String tabName,
+    required VoidCallback onTap,
+    required bool isSelected,
   }) {
     return InkWell(
       onTap: onTap,
@@ -391,7 +391,13 @@ class _HelpTabState extends State<HelpTab> {
                           child: SizedBox(
                             width: double.infinity,
                             height: SizeConfig.screen_height * 8, //75
-                            child: OutlineButton(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                // splashColor: AppColors.customRed,
+                              ),
                               onPressed: () async {
                                 File pdfFile = File(
                                     '${widget.helpFilePath}/6_SCM_M_FAQ.pdf');
@@ -406,10 +412,6 @@ class _HelpTabState extends State<HelpTab> {
                                 style: TextStyle(
                                     fontSize: SizeConfig.font_height * 2),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              splashColor: AppColors.customRed,
                             ),
                           ),
                         ),
@@ -417,7 +419,13 @@ class _HelpTabState extends State<HelpTab> {
                           child: SizedBox(
                             width: double.infinity,
                             height: SizeConfig.screen_height * 8, //75
-                            child: OutlineButton(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                // splashColor: AppColors.customRed,
+                              ),
                               onPressed: () => setState(() {
                                 _helptabIndex = 9;
                               }),
@@ -426,10 +434,6 @@ class _HelpTabState extends State<HelpTab> {
                                 style: TextStyle(
                                     fontSize: SizeConfig.font_height * 2),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              splashColor: AppColors.customRed,
                             ),
                           ),
                         ),

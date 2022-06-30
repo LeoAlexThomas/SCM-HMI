@@ -6,9 +6,9 @@ class DebugConsole extends StatelessWidget {
   final List<Widget> rxDebugList;
   final List<Widget> txDebugList;
   DebugConsole({
-    Key key,
-    @required this.rxDebugList,
-    @required this.txDebugList,
+    Key? key,
+    required this.rxDebugList,
+    required this.txDebugList,
   }) : super(key: key);
 
   @override

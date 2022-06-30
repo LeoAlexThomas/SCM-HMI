@@ -9,52 +9,52 @@ import 'package:StirCastingMachine/widget/set_value_controller.dart';
 import 'package:flutter/material.dart';
 
 class StirrerCard extends StatelessWidget {
-  final String stirrerButtonLabel;
-  final String autoJogButtonLabel;
-  final VoidCallback onStirrerPress;
-  final VoidCallback onLiftUpPress;
-  final VoidCallback onLiftDownPress;
-  final VoidCallback onAutoJogPress;
-  final Color stirrerButtonColor;
-  final Color liftUpButtonColor;
-  final Color liftDownButtonColor;
-  final Color autoJogButtonColor;
+  final String? stirrerButtonLabel;
+  final String? autoJogButtonLabel;
+  final VoidCallback? onStirrerPress;
+  final VoidCallback? onLiftUpPress;
+  final VoidCallback? onLiftDownPress;
+  final VoidCallback? onAutoJogPress;
+  final Color? stirrerButtonColor;
+  final Color? liftUpButtonColor;
+  final Color? liftDownButtonColor;
+  final Color? autoJogButtonColor;
   final String stirrerPrecentValue;
   final String liftPos;
   final String stirrerSetValue;
   final String autoJogSetValue;
-  final VoidCallback onStirrerIncreament;
-  final VoidCallback onAutoJogIncreament;
-  final VoidCallback onStirrerDecreament;
-  final VoidCallback onAutoJogDecreament;
-  final Function(dynamic) onStirrerIncLongPressStart;
-  final Function(dynamic) onAutoJogIncLongPressStart;
-  final Function(dynamic) onStirrerDecLongPressStart;
-  final Function(dynamic) onAutoJogDecLongPressStart;
-  final Function(dynamic) onLiftUpLongPressStart;
-  final Function(dynamic) onLiftDownLongPressStart;
-  final Function(dynamic) onLongPressEnd;
-  final Function(dynamic) onLiftUpLongPressEnd;
-  final Function(dynamic) onLiftDownLongPressEnd;
+  final VoidCallback? onStirrerIncreament;
+  final VoidCallback? onAutoJogIncreament;
+  final VoidCallback? onStirrerDecreament;
+  final VoidCallback? onAutoJogDecreament;
+  final Function(dynamic)? onStirrerIncLongPressStart;
+  final Function(dynamic)? onAutoJogIncLongPressStart;
+  final Function(dynamic)? onStirrerDecLongPressStart;
+  final Function(dynamic)? onAutoJogDecLongPressStart;
+  final Function(dynamic)? onLiftUpLongPressStart;
+  final Function(dynamic)? onLiftDownLongPressStart;
+  final Function(dynamic)? onLongPressEnd;
+  final Function(dynamic)? onLiftUpLongPressEnd;
+  final Function(dynamic)? onLiftDownLongPressEnd;
   final Calculation calc;
 
   StirrerCard({
-    Key key,
-    @required this.stirrerButtonLabel,
-    @required this.autoJogButtonLabel,
-    @required this.stirrerPrecentValue,
-    @required this.liftPos,
-    @required this.stirrerSetValue,
-    @required this.autoJogSetValue,
-    @required this.onStirrerPress,
-    @required this.onLiftUpPress,
-    @required this.onLiftDownPress,
-    @required this.onAutoJogPress,
-    @required this.calc,
-    @required this.stirrerButtonColor,
-    @required this.liftUpButtonColor,
-    @required this.liftDownButtonColor,
-    @required this.autoJogButtonColor,
+    Key? key,
+    required this.stirrerButtonLabel,
+    required this.autoJogButtonLabel,
+    required this.stirrerPrecentValue,
+    required this.liftPos,
+    required this.stirrerSetValue,
+    required this.autoJogSetValue,
+    required this.onStirrerPress,
+    required this.onLiftUpPress,
+    required this.onLiftDownPress,
+    required this.onAutoJogPress,
+    required this.calc,
+    required this.stirrerButtonColor,
+    required this.liftUpButtonColor,
+    required this.liftDownButtonColor,
+    required this.autoJogButtonColor,
     this.onStirrerIncreament,
     this.onAutoJogIncreament,
     this.onStirrerDecreament,
@@ -158,7 +158,7 @@ class StirrerCard extends StatelessWidget {
               ),
               TableRow(
                 children: [
-                  RowHeaderLabel(rowTitle: "AUTO JOG"),
+                  RowHeaderLabel(rowTitle: "3) AUTO JOG"),
                   Text(""),
                   SetValueController(
                     setValue: autoJogSetValue,

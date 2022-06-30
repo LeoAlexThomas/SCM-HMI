@@ -3,20 +3,20 @@ import 'package:StirCastingMachine/services/size_config.dart';
 import 'package:flutter/material.dart';
 
 class SetValueController extends StatelessWidget {
-  final VoidCallback onIncreament;
-  final VoidCallback onDecreament;
-  final Function(dynamic) onIncLongPressStart;
-  final Function(dynamic) onDecLongPressStart;
-  final Function(dynamic) onLongPressEnd;
+  final VoidCallback? onIncreament;
+  final VoidCallback? onDecreament;
+  final Function(dynamic)? onIncLongPressStart;
+  final Function(dynamic)? onDecLongPressStart;
+  final Function(dynamic)? onLongPressEnd;
   final String setValue;
   const SetValueController({
-    Key key,
-    @required this.setValue,
-    @required this.onIncreament,
-    @required this.onDecreament,
-    @required this.onIncLongPressStart,
-    @required this.onDecLongPressStart,
-    @required this.onLongPressEnd,
+    Key? key,
+    required this.setValue,
+    required this.onIncreament,
+    required this.onDecreament,
+    required this.onIncLongPressStart,
+    required this.onDecLongPressStart,
+    required this.onLongPressEnd,
   }) : super(key: key);
 
   @override
