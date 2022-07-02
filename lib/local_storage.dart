@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:intl/intl.dart';
@@ -141,6 +140,7 @@ class AppConfigStorage {
     } catch (e) {
       print('Exception in reading excel file : $e');
       LogEntryStorage().writeLogfile('Exception in reading excel file : $e');
+      return null;
     }
   }
 
@@ -323,14 +323,16 @@ class RecordStorage {
     return File('$path/SCM-Export_${recordName}.xls');
   }
 
-  Future<File?> exportFile(String str) async {
+  Future<String?> exportFile(String str) async {
     File? file = await _localExcelfile();
     if (file == null) {
       LogEntryStorage().writeLogfile("Exported excel FILE PATH NOT FOUND");
       return null;
     }
 
-    return file.writeAsString(str);
+    file.writeAsString(str);
+
+    return file.path;
     // print('content updated');
   }
 
@@ -381,7 +383,7 @@ class DataLoggerStorage {
     return File('$path/SCM_DL_Export_${recordName}.xls');
   }
 
-  Future<File?> exportFile(String str) async {
+  Future<String?> exportFile(String str) async {
     File? file = await _localExcelfile();
     if (file == null) {
       LogEntryStorage().writeLogfile(
@@ -390,11 +392,7 @@ class DataLoggerStorage {
     }
     print("Exported successfully");
     file.writeAsString(str);
-    final path = await _localpath();
-    log("$path");
-    String recordName =
-        DateFormat('dd_mm_yyyy_hh_mm_ss').format(DateTime.now());
-    return File('$path/SCM_DL_Export_${recordName}.xls');
+    return file.path;
     // print('content updated');
   }
 

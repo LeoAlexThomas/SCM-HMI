@@ -145,12 +145,21 @@ class CustomTextStyle {
 }
 
 class SnackbarService {
+  static bool isSnackbarActive = false;
+
   static void showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.fixed,
-      ),
-    );
+    if (isSnackbarActive) {
+      return;
+    }
+    isSnackbarActive = true;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+          SnackBar(
+            content: Text(message),
+            behavior: SnackBarBehavior.fixed,
+          ),
+        )
+        .closed
+        .then((value) => isSnackbarActive = false);
   }
 }

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:StirCastingMachine/data/data.dart';
 import 'package:StirCastingMachine/local_storage.dart';
@@ -207,23 +206,23 @@ class _DataLoggerState extends State<DataLogger> {
                                 context, "Record is Empty");
                           } else {
                             String content = '';
-                            File? exportedFile;
                             excelFileContent.forEach((element) {
                               element.forEach((ele) {
                                 content += '${ele.toString()}\t';
                               });
                               content += '\n';
+                              dataLoggerFile
+                                  .exportFile(content)
+                                  .then((exportedFilePath) {
+                                onResetData();
+                                SnackbarService.showMessage(
+                                  context,
+                                  exportedFilePath == null
+                                      ? "Data Logger File exported"
+                                      : "Data Logger file exported here: $exportedFilePath",
+                                );
+                              });
                             });
-                            exportedFile = await dataLoggerFile
-                                .exportFile(excelFileContent.join(','));
-                            if (exportedFile == null) {
-                              return;
-                            }
-                            onResetData();
-                            SnackbarService.showMessage(
-                              context,
-                              "Data Logger file exported here: ${exportedFile.path}",
-                            );
                           }
                         },
                       ),
