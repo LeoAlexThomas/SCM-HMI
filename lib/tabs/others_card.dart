@@ -4,34 +4,34 @@ import 'package:StirCastingMachine/widget/card_header.dart';
 import 'package:flutter/material.dart';
 
 class OtherCard extends StatelessWidget {
-  final String centrifugeButtonLabel;
-  final String vaccumPumpButtonLabel;
-  final Color centrifugeButtonColor;
-  final Color vaccumButtonColor;
+  final String? centrifugeButtonLabel;
+  final String? vaccumPumpButtonLabel;
+  final Color? centrifugeButtonColor;
+  final Color? vaccumButtonColor;
   final String centrifugePrecentValue;
   final String centrifugeSetValue;
-  final VoidCallback onCentrifugePress;
-  final VoidCallback onVaccumPumpPress;
+  final VoidCallback? onCentrifugePress;
+  final VoidCallback? onVaccumPumpPress;
   final VoidCallback onCentrifugeIncreamentPress;
   final VoidCallback onCentrifugeDecreamentPress;
   final Function(dynamic) onIncCentrifugeLongPressStart;
   final Function(dynamic) onDecCentrifugeLongPressStart;
   final Function(dynamic) onLongPressEnd;
   const OtherCard({
-    Key key,
-    @required this.centrifugeButtonLabel,
-    @required this.vaccumPumpButtonLabel,
-    @required this.centrifugeButtonColor,
-    @required this.vaccumButtonColor,
-    @required this.centrifugePrecentValue,
-    @required this.centrifugeSetValue,
-    @required this.onCentrifugePress,
-    @required this.onVaccumPumpPress,
-    @required this.onCentrifugeIncreamentPress,
-    @required this.onCentrifugeDecreamentPress,
-    @required this.onIncCentrifugeLongPressStart,
-    @required this.onDecCentrifugeLongPressStart,
-    @required this.onLongPressEnd,
+    Key? key,
+    required this.centrifugeButtonLabel,
+    required this.vaccumPumpButtonLabel,
+    required this.centrifugeButtonColor,
+    required this.vaccumButtonColor,
+    required this.centrifugePrecentValue,
+    required this.centrifugeSetValue,
+    required this.onCentrifugePress,
+    required this.onVaccumPumpPress,
+    required this.onCentrifugeIncreamentPress,
+    required this.onCentrifugeDecreamentPress,
+    required this.onIncCentrifugeLongPressStart,
+    required this.onDecCentrifugeLongPressStart,
+    required this.onLongPressEnd,
   }) : super(key: key);
 
   @override

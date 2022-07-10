@@ -13,14 +13,14 @@ class SettingsTab extends StatefulWidget {
   final String stir_min_value;
 
   SettingsTab({
-    Key key,
-    @required this.appConfig,
-    @required this.onUpdate,
-    @required this.onWifiPressed,
-    @required this.onBluetoothPressed,
-    @required this.isWifiConnected,
-    @required this.isBluetoothConnected,
-    @required this.stir_min_value,
+    Key? key,
+    required this.appConfig,
+    required this.onUpdate,
+    required this.onWifiPressed,
+    required this.onBluetoothPressed,
+    required this.isWifiConnected,
+    required this.isBluetoothConnected,
+    required this.stir_min_value,
   }) : super(key: key);
 
   @override
@@ -39,10 +39,10 @@ class _SettingsTabState extends State<SettingsTab> {
   }
 
   Widget _buildConnectionTab({
-    @required String label,
-    @required IconData icon,
-    @required VoidCallback onPressed,
-    @required bool isSelected,
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+    required bool isSelected,
   }) {
     return GestureDetector(
       onTap: onPressed,
@@ -201,7 +201,7 @@ class _SettingsTabState extends State<SettingsTab> {
     }
   }
 
-  Widget _buildSettingCard({@required Widget child}) {
+  Widget _buildSettingCard({required Widget child}) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: SizeConfig.screen_height * 1.5),
       padding: EdgeInsets.symmetric(horizontal: SizeConfig.screen_width * 1.5),
@@ -355,8 +355,8 @@ class _SettingsTabState extends State<SettingsTab> {
   }
 
   Widget _buildSettingButtons({
-    @required String buttonLabel,
-    @required VoidCallback onPressed,
+    required String buttonLabel,
+    required VoidCallback onPressed,
   }) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(

@@ -8,17 +8,21 @@ import 'package:intl/intl.dart';
 
 class DataLogger extends StatefulWidget {
   final bool isConnected;
+  final bool isMainOn;
   final int tempA;
   final int tempB;
   final int tempC;
   final int tempD;
+  final Function(bool) onDataLoggerStart;
   DataLogger({
-    Key key,
-    @required this.isConnected,
-    @required this.tempA,
-    @required this.tempB,
-    @required this.tempC,
-    @required this.tempD,
+    Key? key,
+    required this.isConnected,
+    required this.isMainOn,
+    required this.tempA,
+    required this.tempB,
+    required this.tempC,
+    required this.tempD,
+    required this.onDataLoggerStart,
   }) : super(key: key);
 
   @override
@@ -26,12 +30,19 @@ class DataLogger extends StatefulWidget {
 }
 
 class _DataLoggerState extends State<DataLogger> {
-  final recordFile = RecordStorage();
+  final dataLoggerFile = DataLoggerStorage();
+  final ScrollController dataLogScrollController = ScrollController();
   List<TableRow> rxdList = [];
 
-  Timer recordTimerEvent;
+  @override
+  void dispose() {
+    dataLogScrollController.dispose();
+    super.dispose();
+  }
+
+  late Timer recordTimerEvent;
   bool b_start_record = false;
-  String _tableTimer;
+  String? _tableTimer;
   int d_table_sino = 0;
   List<String> recordTimer = [
     '1 Sec',
@@ -48,13 +59,13 @@ class _DataLoggerState extends State<DataLogger> {
       'Temp B',
       'Temp C',
       'Temp D',
-    ]
+    ],
   ];
 
   Widget _buildButton({
-    @required String buttonLabel,
-    @required Color buttonColor,
-    @required VoidCallback onPressed,
+    required String buttonLabel,
+    required Color buttonColor,
+    required VoidCallback? onPressed,
   }) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -74,6 +85,22 @@ class _DataLoggerState extends State<DataLogger> {
     );
   }
 
+  void onResetData() {
+    setState(() {
+      d_table_sino = 0;
+      rxdList = [];
+      excelFileContent = [
+        [
+          'Si_No',
+          'Temp A',
+          'Temp B',
+          'Temp C',
+          'Temp D',
+        ]
+      ];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -91,6 +118,7 @@ class _DataLoggerState extends State<DataLogger> {
         Expanded(
           child: Scrollbar(
             child: ListView(
+              controller: dataLogScrollController,
               children: [
                 Table(
                   border: TableBorder.all(
@@ -113,13 +141,17 @@ class _DataLoggerState extends State<DataLogger> {
               height: SizeConfig.screen_height * 5,
               margin: EdgeInsets.only(left: SizeConfig.screen_width * 1),
               child: _buildButton(
-                buttonColor: b_start_record ? AppColors.red : AppColors.green,
-                onPressed: () {
-                  setState(() {
-                    b_start_record = !b_start_record;
-                  });
-                  if (b_start_record) _updateTimer(_tableTimer);
-                },
+                buttonColor: b_start_record ? AppColors.red! : AppColors.green,
+                onPressed: widget.isMainOn
+                    ? () {
+                        setState(() {
+                          b_start_record = !b_start_record;
+                        });
+                        if (b_start_record) _updateTimer(_tableTimer);
+
+                        widget.onDataLoggerStart(b_start_record);
+                      }
+                    : null,
                 buttonLabel:
                     b_start_record ? 'Stop Data Log' : 'Start Data Log',
               ),
@@ -156,35 +188,19 @@ class _DataLoggerState extends State<DataLogger> {
                               );
                             }).toList(),
                             hint: Text('10 Sec'),
-                            onChanged: b_start_record ? null : _updateTimer,
+                            onChanged: _updateTimer,
                           ),
                         ),
                       ),
                       _buildButton(
                         buttonLabel: 'CLEAN',
                         buttonColor: AppColors.blue,
-                        onPressed: () {
-                          setState(
-                            () {
-                              d_table_sino = 0;
-                              rxdList = [];
-                              excelFileContent = [
-                                [
-                                  'Si_No',
-                                  'Temp A',
-                                  'Temp B',
-                                  'Temp C',
-                                  'Temp D',
-                                ]
-                              ];
-                            },
-                          );
-                        },
+                        onPressed: onResetData,
                       ),
                       _buildButton(
                         buttonLabel: 'EXPORT',
                         buttonColor: AppColors.blue,
-                        onPressed: () {
+                        onPressed: () async {
                           if (excelFileContent.length == 1) {
                             SnackbarService.showMessage(
                                 context, "Record is Empty");
@@ -195,16 +211,18 @@ class _DataLoggerState extends State<DataLogger> {
                                 content += '${ele.toString()}\t';
                               });
                               content += '\n';
-                              recordFile.exportFile(content);
-                            });
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  content: Text('Exported'),
+                              dataLoggerFile
+                                  .exportFile(content)
+                                  .then((exportedFilePath) {
+                                onResetData();
+                                SnackbarService.showMessage(
+                                  context,
+                                  exportedFilePath == null
+                                      ? "Data Logger File exported"
+                                      : "Data Logger file exported here: $exportedFilePath",
                                 );
-                              },
-                            );
+                              });
+                            });
                           }
                         },
                       ),
@@ -224,7 +242,7 @@ class _DataLoggerState extends State<DataLogger> {
     );
   }
 
-  void _updateTimer(String value) {
+  _updateTimer(String? value) {
     setState(() {
       _tableTimer = value;
       switch (_tableTimer) {
@@ -300,6 +318,9 @@ class _DataLoggerState extends State<DataLogger> {
       widget.tempC,
       widget.tempD,
     ]);
+
+    dataLogScrollController
+        .jumpTo(dataLogScrollController.position.maxScrollExtent);
   }
 
   Widget _buildTableHeaderCell(String title) {

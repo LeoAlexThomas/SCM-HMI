@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 class RecordScreen extends StatefulWidget {
   final bool isConnected;
+  final bool isMainOn;
   final bool isDebug;
   final bool isPourOpen;
   final bool isVaccumOn;
@@ -23,22 +24,23 @@ class RecordScreen extends StatefulWidget {
   final int centrifuge;
   final int sqzPresure;
   RecordScreen({
-    Key key,
-    @required this.isConnected,
-    @required this.isDebug,
-    @required this.isPourOpen,
-    @required this.isVaccumOn,
-    @required this.isGasAvaible,
-    @required this.isCentrifugeAvaible,
-    @required this.isSqueezeAvaible,
-    @required this.isVaccumAvaible,
-    @required this.melt,
-    @required this.powder,
-    @required this.mould,
-    @required this.stirrer,
-    @required this.gasFlow,
-    @required this.centrifuge,
-    @required this.sqzPresure,
+    Key? key,
+    required this.isConnected,
+    required this.isMainOn,
+    required this.isDebug,
+    required this.isPourOpen,
+    required this.isVaccumOn,
+    required this.isGasAvaible,
+    required this.isCentrifugeAvaible,
+    required this.isSqueezeAvaible,
+    required this.isVaccumAvaible,
+    required this.melt,
+    required this.powder,
+    required this.mould,
+    required this.stirrer,
+    required this.gasFlow,
+    required this.centrifuge,
+    required this.sqzPresure,
   }) : super(key: key);
 
   @override
@@ -47,11 +49,12 @@ class RecordScreen extends StatefulWidget {
 
 class _RecordScreenState extends State<RecordScreen> {
   final recordFile = RecordStorage();
+  final ScrollController recordScrollController = ScrollController();
   List<TableRow> rxdList = [];
 
-  Timer recordTimerEvent;
+  late Timer recordTimerEvent;
   bool b_start_record = false;
-  String _tableTimer;
+  String? _tableTimer;
   int d_table_sino = 0;
   List<String> recordTimer = [
     '1 Sec',
@@ -75,13 +78,19 @@ class _RecordScreenState extends State<RecordScreen> {
       'Pour',
       'Squeeze',
       'Vaccum'
-    ]
+    ],
   ];
 
+  @override
+  void dispose() {
+    recordScrollController.dispose();
+    super.dispose();
+  }
+
   Widget _buildButton({
-    @required String buttonLabel,
-    @required Color buttonColor,
-    @required VoidCallback onPressed,
+    required String buttonLabel,
+    required Color buttonColor,
+    required VoidCallback? onPressed,
   }) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -101,6 +110,27 @@ class _RecordScreenState extends State<RecordScreen> {
     );
   }
 
+  void onResetData() {
+    setState(() {
+      d_table_sino = 0;
+      rxdList = [];
+      excelFileContent = [
+        [
+          'Si_No',
+          'Time',
+          'Melt',
+          'Powder',
+          'Mould',
+          'Stirrer',
+          'Gas',
+          'Pour',
+          'Squeeze',
+          'Vaccum'
+        ]
+      ];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -118,6 +148,7 @@ class _RecordScreenState extends State<RecordScreen> {
         Expanded(
           child: Scrollbar(
             child: ListView(
+              controller: recordScrollController,
               children: [
                 Table(
                   border: TableBorder.all(
@@ -140,13 +171,15 @@ class _RecordScreenState extends State<RecordScreen> {
               height: SizeConfig.screen_height * 5,
               margin: EdgeInsets.only(left: SizeConfig.screen_width * 1),
               child: _buildButton(
-                buttonColor: b_start_record ? AppColors.red : AppColors.green,
-                onPressed: () {
-                  setState(() {
-                    b_start_record = !b_start_record;
-                  });
-                  if (b_start_record) _updateTimer(_tableTimer);
-                },
+                buttonColor: b_start_record ? AppColors.red! : AppColors.green,
+                onPressed: widget.isMainOn
+                    ? () {
+                        setState(() {
+                          b_start_record = !b_start_record;
+                        });
+                        if (b_start_record) _updateTimer(_tableTimer);
+                      }
+                    : null,
                 buttonLabel: b_start_record ? 'Stop Record' : 'Start Record',
               ),
             ),
@@ -189,33 +222,12 @@ class _RecordScreenState extends State<RecordScreen> {
                       _buildButton(
                         buttonLabel: 'CLEAN',
                         buttonColor: AppColors.blue,
-                        onPressed: () {
-                          setState(
-                            () {
-                              d_table_sino = 0;
-                              rxdList = [];
-                              excelFileContent = [
-                                [
-                                  'Si_No',
-                                  'Time',
-                                  'Melt',
-                                  'Powder',
-                                  'Mould',
-                                  'Stirrer',
-                                  'Gas',
-                                  'Pour',
-                                  'Squeeze',
-                                  'Vaccum'
-                                ]
-                              ];
-                            },
-                          );
-                        },
+                        onPressed: onResetData,
                       ),
                       _buildButton(
                         buttonLabel: 'EXPORT',
                         buttonColor: AppColors.blue,
-                        onPressed: () {
+                        onPressed: () async {
                           if (excelFileContent.length == 1) {
                             SnackbarService.showMessage(
                                 context, "Record is Empty");
@@ -226,16 +238,17 @@ class _RecordScreenState extends State<RecordScreen> {
                                 content += '${ele.toString()}\t';
                               });
                               content += '\n';
-                              recordFile.exportFile(content);
+                              recordFile
+                                  .exportFile(content)
+                                  .then((exportedFilePath) {
+                                onResetData();
+                                SnackbarService.showMessage(
+                                    context,
+                                    exportedFilePath == null
+                                        ? "Record Exported"
+                                        : "Record Exported to this path: $exportedFilePath");
+                              });
                             });
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  content: Text('Exported'),
-                                );
-                              },
-                            );
                           }
                         },
                       ),
@@ -255,7 +268,7 @@ class _RecordScreenState extends State<RecordScreen> {
     );
   }
 
-  void _updateTimer(String value) {
+  void _updateTimer(String? value) {
     setState(() {
       _tableTimer = value;
       switch (_tableTimer) {
@@ -353,6 +366,8 @@ class _RecordScreenState extends State<RecordScreen> {
         widget.isVaccumOn ? 'ON' : 'OFF'
       ]);
     }
+    recordScrollController
+        .jumpTo(recordScrollController.position.maxScrollExtent);
   }
 
   Widget _buildTableHeaderCell(String title) {

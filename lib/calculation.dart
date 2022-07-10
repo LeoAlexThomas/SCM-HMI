@@ -5,7 +5,7 @@ import 'package:StirCastingMachine/local_storage.dart';
 var logFile = LogEntryStorage();
 
 class Calculation {
-  Timer timer;
+  Timer? timer;
 // For furnace
   int furnaceOut = 0,
       furnaceCounter = 0,
@@ -197,45 +197,33 @@ class Calculation {
     }
   }
 
-  String pourCondition(pourPosition) {
-    try {
-      if (pourPosition == 2) {
-        return 'OPEN';
-      } else if (pourPosition == 1) {
-        return 'CLOSE';
-      } else {
-        return 'OPER';
-      }
-    } catch (e) {
-      logFile.writeLogfile('Exception in pourCondition: $e');
+  String pourCondition(int? pourPosition) {
+    if (pourPosition == 2) {
+      return 'OPEN';
+    } else if (pourPosition == 1) {
+      return 'CLOSE';
+    } else {
+      return 'OPER';
     }
   }
 
-  String liftPosition(int leverPosition) {
-    try {
-      if (leverPosition == 1) {
-        return 'DOWN';
-      } else if (leverPosition == 2) {
-        return 'UP';
-      } else {
-        return 'OPER';
-      }
-    } catch (e) {
-      logFile.writeLogfile('Exception in liftPosition: $e');
+  String liftPosition(int? leverPosition) {
+    if (leverPosition == 1) {
+      return 'DOWN';
+    } else if (leverPosition == 2) {
+      return 'UP';
+    } else {
+      return 'OPER';
     }
   }
 
-  String uvliftPosition(int leverPosition) {
-    try {
-      if (leverPosition == 2) {
-        return 'UP';
-      } else if (leverPosition == 1) {
-        return 'DOWN';
-      } else {
-        return 'OPER';
-      }
-    } catch (e) {
-      logFile.writeLogfile('uvliftPosition Error: $e');
+  String uvliftPosition(int? leverPosition) {
+    if (leverPosition == 2) {
+      return 'UP';
+    } else if (leverPosition == 1) {
+      return 'DOWN';
+    } else {
+      return 'OPER';
     }
   }
 
@@ -279,63 +267,60 @@ class Calculation {
     int maxtime,
     int mintime,
   ) {
-    try {
-      if (heatername == 'furnace') {
-        if (heaterState == 'ON') {
-          furnaceOut = temp_CalOutPercent(pv, sv, maxtime, mintime);
-          furnaceOFFTime = (10 - furnaceOut);
-          furnaceONTime = (10 - furnaceOFFTime);
-          furnaceCounter++;
-          if (furnaceCounter <= furnaceONTime)
-            furnaceHeatOUT = true;
-          else
-            furnaceHeatOUT = false;
-          if (furnaceCounter == 10) furnaceCounter = 0;
-        }
-        return furnaceHeatOUT;
-      } else if (heatername == 'powder') {
-        if (heaterState == 'ON') {
-          powderOut = temp_CalOutPercent(pv, sv, maxtime, mintime);
-          powderOFFTime = (10 - powderOut);
-          powderONTime = (10 - powderOFFTime);
-          powderCounter++;
-          if (powderCounter <= powderONTime)
-            powderHeatOUT = true;
-          else
-            powderHeatOUT = false;
-          if (powderCounter == 10) powderCounter = 0;
-        }
-        return powderHeatOUT;
-      } else if (heatername == 'mold') {
-        if (heaterState == 'ON') {
-          mouldOut = temp_CalOutPercent(pv, sv, maxtime, mintime);
-          mouldOFFTime = (10 - mouldOut);
-          mouldONTime = (10 - mouldOFFTime);
-          mouldCounter++;
-          if (mouldCounter <= mouldONTime)
-            mouldHeatOUT = true;
-          else
-            mouldHeatOUT = false;
-          if (mouldCounter == 10) mouldCounter = 0;
-        }
-        return mouldHeatOUT;
-      } else if (heatername == 'runway') {
-        if (heaterState == 'ON') {
-          mouldOut = temp_CalOutPercent(pv, sv, maxtime, mintime);
-          mouldOFFTime = (10 - mouldOut);
-          mouldONTime = (10 - mouldOFFTime);
-          mouldCounter++;
-          if (mouldCounter <= mouldONTime)
-            mouldHeatOUT = true;
-          else
-            mouldHeatOUT = false;
-          if (mouldCounter == 10) mouldCounter = 0;
-        }
-
-        return runwayHeatOUT;
+    if (heatername == 'furnace') {
+      if (heaterState == 'ON') {
+        furnaceOut = temp_CalOutPercent(pv, sv, maxtime, mintime);
+        furnaceOFFTime = (10 - furnaceOut);
+        furnaceONTime = (10 - furnaceOFFTime);
+        furnaceCounter++;
+        if (furnaceCounter <= furnaceONTime)
+          furnaceHeatOUT = true;
+        else
+          furnaceHeatOUT = false;
+        if (furnaceCounter == 10) furnaceCounter = 0;
       }
-    } catch (e) {
-      logFile.writeLogfile('btnPressedCallOut Error: $e');
+      return furnaceHeatOUT;
+    } else if (heatername == 'powder') {
+      if (heaterState == 'ON') {
+        powderOut = temp_CalOutPercent(pv, sv, maxtime, mintime);
+        powderOFFTime = (10 - powderOut);
+        powderONTime = (10 - powderOFFTime);
+        powderCounter++;
+        if (powderCounter <= powderONTime)
+          powderHeatOUT = true;
+        else
+          powderHeatOUT = false;
+        if (powderCounter == 10) powderCounter = 0;
+      }
+      return powderHeatOUT;
+    } else if (heatername == 'mold') {
+      if (heaterState == 'ON') {
+        mouldOut = temp_CalOutPercent(pv, sv, maxtime, mintime);
+        mouldOFFTime = (10 - mouldOut);
+        mouldONTime = (10 - mouldOFFTime);
+        mouldCounter++;
+        if (mouldCounter <= mouldONTime)
+          mouldHeatOUT = true;
+        else
+          mouldHeatOUT = false;
+        if (mouldCounter == 10) mouldCounter = 0;
+      }
+      return mouldHeatOUT;
+    } else {
+      //  if (heatername == 'runway')
+      if (heaterState == 'ON') {
+        mouldOut = temp_CalOutPercent(pv, sv, maxtime, mintime);
+        mouldOFFTime = (10 - mouldOut);
+        mouldONTime = (10 - mouldOFFTime);
+        mouldCounter++;
+        if (mouldCounter <= mouldONTime)
+          mouldHeatOUT = true;
+        else
+          mouldHeatOUT = false;
+        if (mouldCounter == 10) mouldCounter = 0;
+      }
+
+      return runwayHeatOUT;
     }
   }
 

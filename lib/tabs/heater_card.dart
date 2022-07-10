@@ -5,18 +5,18 @@ import 'package:StirCastingMachine/widget/card_header.dart';
 import 'package:flutter/material.dart';
 
 class HeaterCard extends StatelessWidget {
-  final String furnaceButtonLabel;
-  final String powderButtonLabel;
-  final String mouldButtonLabel;
+  final String? furnaceButtonLabel;
+  final String? powderButtonLabel;
+  final String? mouldButtonLabel;
   final bool isFurnaceOn;
   final bool isPowderOn;
   final bool isMouldOn;
-  final Color furnaceButtonColor;
-  final Color powderButtonColor;
-  final Color mouldButtonColor;
-  final VoidCallback onFurnacePress;
-  final VoidCallback onPowderPress;
-  final VoidCallback onMouldPress;
+  final Color? furnaceButtonColor;
+  final Color? powderButtonColor;
+  final Color? mouldButtonColor;
+  final VoidCallback? onFurnacePress;
+  final VoidCallback? onPowderPress;
+  final VoidCallback? onMouldPress;
   final String furnacePrecentValue;
   final String meltPrecentValue;
   final String powderPrecentValue;
@@ -25,49 +25,49 @@ class HeaterCard extends StatelessWidget {
   final String meltSetValue;
   final String powderSetValue;
   final String mouldSetValue;
-  final Widget subTitle;
-  final VoidCallback onFurnaceIncreament;
-  final VoidCallback onMeltIncreament;
-  final VoidCallback onPowderIncreament;
-  final VoidCallback onMouldIncreament;
-  final VoidCallback onFurnaceDecreament;
-  final VoidCallback onMeltDecreament;
-  final VoidCallback onPowderDecreament;
-  final VoidCallback onMouldDecreament;
-  final Function(dynamic) onFurnaceIncLongPressStart;
-  final Function(dynamic) onMeltIncLongPressStart;
-  final Function(dynamic) onPowderIncLongPressStart;
-  final Function(dynamic) onMouldIncLongPressStart;
-  final Function(dynamic) onFurnaceDecLongPressStart;
-  final Function(dynamic) onMeltDecLongPressStart;
-  final Function(dynamic) onPowderDecLongPressStart;
-  final Function(dynamic) onMouldDecLongPressStart;
-  final Function(dynamic) onLongPressEnd;
+  final Widget? subTitle;
+  final VoidCallback? onFurnaceIncreament;
+  final VoidCallback? onMeltIncreament;
+  final VoidCallback? onPowderIncreament;
+  final VoidCallback? onMouldIncreament;
+  final VoidCallback? onFurnaceDecreament;
+  final VoidCallback? onMeltDecreament;
+  final VoidCallback? onPowderDecreament;
+  final VoidCallback? onMouldDecreament;
+  final Function(dynamic)? onFurnaceIncLongPressStart;
+  final Function(dynamic)? onMeltIncLongPressStart;
+  final Function(dynamic)? onPowderIncLongPressStart;
+  final Function(dynamic)? onMouldIncLongPressStart;
+  final Function(dynamic)? onFurnaceDecLongPressStart;
+  final Function(dynamic)? onMeltDecLongPressStart;
+  final Function(dynamic)? onPowderDecLongPressStart;
+  final Function(dynamic)? onMouldDecLongPressStart;
+  final Function(dynamic)? onLongPressEnd;
   final Calculation calc;
 
   HeaterCard({
-    Key key,
-    @required this.furnaceButtonLabel,
-    @required this.powderButtonLabel,
-    @required this.mouldButtonLabel,
-    @required this.isFurnaceOn,
-    @required this.isMouldOn,
-    @required this.isPowderOn,
-    @required this.furnaceButtonColor,
-    @required this.mouldButtonColor,
-    @required this.powderButtonColor,
-    @required this.furnacePrecentValue,
-    @required this.meltPrecentValue,
-    @required this.powderPrecentValue,
-    @required this.mouldPrecentValue,
-    @required this.furnaceSetValue,
-    @required this.meltSetValue,
-    @required this.powderSetValue,
-    @required this.mouldSetValue,
-    @required this.onFurnacePress,
-    @required this.onPowderPress,
-    @required this.onMouldPress,
-    @required this.calc,
+    Key? key,
+    required this.furnaceButtonLabel,
+    required this.powderButtonLabel,
+    required this.mouldButtonLabel,
+    required this.isFurnaceOn,
+    required this.isMouldOn,
+    required this.isPowderOn,
+    required this.furnaceButtonColor,
+    required this.mouldButtonColor,
+    required this.powderButtonColor,
+    required this.furnacePrecentValue,
+    required this.meltPrecentValue,
+    required this.powderPrecentValue,
+    required this.mouldPrecentValue,
+    required this.furnaceSetValue,
+    required this.meltSetValue,
+    required this.powderSetValue,
+    required this.mouldSetValue,
+    required this.onFurnacePress,
+    required this.onPowderPress,
+    required this.onMouldPress,
+    required this.calc,
     this.subTitle,
     this.onFurnaceIncreament,
     this.onMeltIncreament,
@@ -123,7 +123,7 @@ class HeaterCard extends StatelessWidget {
                 onLongPressEnd: onLongPressEnd,
               ),
               DataContentShow.getRowContent(
-                rowTitle: "2) Melt",
+                rowTitle: "2) MELT",
                 isControllerOn: false,
                 controllerColor: furnaceButtonColor,
                 precentValue: meltPrecentValue,
@@ -139,7 +139,7 @@ class HeaterCard extends StatelessWidget {
                 onLongPressEnd: onLongPressEnd,
               ),
               DataContentShow.getRowContent(
-                rowTitle: "3) Powder",
+                rowTitle: "3) POWDER",
                 isControllerOn: isPowderOn,
                 precentValue: powderPrecentValue,
                 controllerColor: powderButtonColor,

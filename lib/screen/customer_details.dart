@@ -1,13 +1,22 @@
 import 'package:StirCastingMachine/data/data.dart';
-import 'package:StirCastingMachine/model/customer_details_response.dart';
 import 'package:StirCastingMachine/services/size_config.dart';
 import 'package:flutter/material.dart';
 
 class CustomerDetails extends StatelessWidget {
-  final CustomerDetailsResponse customerDetails;
+  final String college;
+  final String department;
+  final String policy;
+  final int policyNo;
+  final int machineNo;
+  final bool isWarrentyExpired;
   const CustomerDetails({
-    Key key,
-    @required this.customerDetails,
+    Key? key,
+    required this.college,
+    required this.department,
+    required this.policy,
+    required this.policyNo,
+    required this.machineNo,
+    required this.isWarrentyExpired,
   }) : super(key: key);
 
   @override
@@ -89,7 +98,7 @@ class CustomerDetails extends StatelessWidget {
                       width: SizeConfig.screen_width * 35,
                       height: SizeConfig.screen_height * 3.5,
                       child: Text(
-                        ': ${customerDetails.college}',
+                        ': $college',
                         style: TextStyle(
                           fontSize: SizeConfig.font_height * 2.4,
                         ),
@@ -114,7 +123,7 @@ class CustomerDetails extends StatelessWidget {
                       width: SizeConfig.screen_width * 35,
                       height: SizeConfig.screen_height * 3.5,
                       child: Text(
-                        ': ${customerDetails.department}',
+                        ': $department',
                         style: TextStyle(
                           fontSize: SizeConfig.font_height * 2.4,
                         ),
@@ -139,7 +148,7 @@ class CustomerDetails extends StatelessWidget {
                       width: SizeConfig.screen_width * 35,
                       height: SizeConfig.screen_height * 3.5,
                       child: Text(
-                        ': ${customerDetails.policy}',
+                        ': $policy',
                         style: TextStyle(
                           fontSize: SizeConfig.font_height * 2.4,
                         ),
@@ -164,7 +173,7 @@ class CustomerDetails extends StatelessWidget {
                       width: SizeConfig.screen_width * 35,
                       height: SizeConfig.screen_height * 3.5,
                       child: Text(
-                        ': ${customerDetails.policyNo}',
+                        ': $policyNo',
                         style: TextStyle(
                           fontSize: SizeConfig.font_height * 2.4,
                         ),
@@ -189,7 +198,7 @@ class CustomerDetails extends StatelessWidget {
                       width: SizeConfig.screen_width * 35,
                       height: SizeConfig.screen_height * 3.5,
                       child: Text(
-                        ': ${customerDetails.machineNo}',
+                        ': $machineNo',
                         style: TextStyle(
                           fontSize: SizeConfig.font_height * 2.4,
                         ),
@@ -214,14 +223,12 @@ class CustomerDetails extends StatelessWidget {
                       width: SizeConfig.screen_width * 35,
                       height: SizeConfig.screen_height * 3.5,
                       child: Text(
-                        customerDetails.isWarrentyExpired
-                            ? 'INACTIVE'
-                            : 'ACTIVE',
+                        isWarrentyExpired ? 'INACTIVE' : 'ACTIVE',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: AppColors.white,
                           fontSize: SizeConfig.font_height * 2.4,
-                          backgroundColor: customerDetails.isWarrentyExpired
+                          backgroundColor: isWarrentyExpired
                               ? AppColors.red
                               : AppColors.green,
                         ),

@@ -6,9 +6,9 @@ class CardHeader extends StatelessWidget {
   final String cardTitle;
   final String subTitle;
   const CardHeader({
-    Key key,
-    @required this.cardTitle,
-    @required this.subTitle,
+    Key? key,
+    required this.cardTitle,
+    required this.subTitle,
   }) : super(key: key);
 
   @override

@@ -4,38 +4,38 @@ import 'package:StirCastingMachine/widget/card_header.dart';
 import 'package:flutter/material.dart';
 
 class SqueezeCard extends StatelessWidget {
-  final String runwayButtonLabel;
-  final Color runwayButtonColor;
+  final String? runwayButtonLabel;
+  final Color? runwayButtonColor;
   final bool isRunwayOn;
-  final String squeezeButtonLabel;
-  final Color squeezeButtonColor;
+  final String? squeezeButtonLabel;
+  final Color? squeezeButtonColor;
   final String runwayPrecentValue;
   final String runwaySetValue;
   final String squeezePrecentValue;
-  final VoidCallback onRunwayPress;
-  final VoidCallback onSqueezePress;
+  final VoidCallback? onRunwayPress;
+  final VoidCallback? onSqueezePress;
   final VoidCallback onRunwayIncreament;
   final VoidCallback onRunwayDecreament;
   final Function(dynamic) onRunwayIncLongPressStart;
   final Function(dynamic) onRunwayDecLongPressStart;
   final Function(dynamic) onLongPressEnd;
   const SqueezeCard({
-    Key key,
-    @required this.runwayButtonLabel,
-    @required this.runwayButtonColor,
-    @required this.isRunwayOn,
-    @required this.squeezeButtonLabel,
-    @required this.squeezeButtonColor,
-    @required this.runwayPrecentValue,
-    @required this.runwaySetValue,
-    @required this.squeezePrecentValue,
-    @required this.onRunwayPress,
-    @required this.onSqueezePress,
-    @required this.onRunwayIncreament,
-    @required this.onRunwayDecreament,
-    @required this.onRunwayIncLongPressStart,
-    @required this.onRunwayDecLongPressStart,
-    @required this.onLongPressEnd,
+    Key? key,
+    required this.runwayButtonLabel,
+    required this.runwayButtonColor,
+    required this.isRunwayOn,
+    required this.squeezeButtonLabel,
+    required this.squeezeButtonColor,
+    required this.runwayPrecentValue,
+    required this.runwaySetValue,
+    required this.squeezePrecentValue,
+    required this.onRunwayPress,
+    required this.onSqueezePress,
+    required this.onRunwayIncreament,
+    required this.onRunwayDecreament,
+    required this.onRunwayIncLongPressStart,
+    required this.onRunwayDecLongPressStart,
+    required this.onLongPressEnd,
   }) : super(key: key);
 
   @override

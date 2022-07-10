@@ -7,38 +7,38 @@ import 'package:StirCastingMachine/widget/row_header_label.dart';
 import 'package:flutter/material.dart';
 
 class UltraSonicCard extends StatelessWidget {
-  final String powderVibButtonLabel;
-  final Color powderVibButtonColor;
-  final String uvEMVButtonLabel;
-  final Color uvEMVButtonColor;
+  final String? powderVibButtonLabel;
+  final Color? powderVibButtonColor;
+  final String? uvEMVButtonLabel;
+  final Color? uvEMVButtonColor;
   final String uvLiftPrecentValue;
-  final VoidCallback onPowderVibPress;
-  final VoidCallback onUVEMVPress;
-  final VoidCallback onUVLiftUpPress;
-  final VoidCallback onUVLiftDownPress;
-  final Color liftUpButtonColor;
-  final Color liftDownButtonColor;
+  final VoidCallback? onPowderVibPress;
+  final VoidCallback? onUVEMVPress;
+  final VoidCallback? onUVLiftUpPress;
+  final VoidCallback? onUVLiftDownPress;
+  final Color? liftUpButtonColor;
+  final Color? liftDownButtonColor;
   final Function(dynamic) uvLiftUpLongPressStart;
   final Function(dynamic) uvLiftUpLongPressEnd;
   final Function(dynamic) uvLiftDownLongPressStart;
   final Function(dynamic) uvLiftDownLongPressEnd;
   const UltraSonicCard({
-    Key key,
-    @required this.powderVibButtonLabel,
-    @required this.powderVibButtonColor,
-    @required this.uvEMVButtonLabel,
-    @required this.uvEMVButtonColor,
-    @required this.uvLiftPrecentValue,
-    @required this.onUVLiftUpPress,
-    @required this.onUVLiftDownPress,
-    @required this.uvLiftUpLongPressStart,
-    @required this.uvLiftUpLongPressEnd,
-    @required this.uvLiftDownLongPressStart,
-    @required this.uvLiftDownLongPressEnd,
-    @required this.onPowderVibPress,
-    @required this.onUVEMVPress,
-    @required this.liftUpButtonColor,
-    @required this.liftDownButtonColor,
+    Key? key,
+    required this.powderVibButtonLabel,
+    required this.powderVibButtonColor,
+    required this.uvEMVButtonLabel,
+    required this.uvEMVButtonColor,
+    required this.uvLiftPrecentValue,
+    required this.onUVLiftUpPress,
+    required this.onUVLiftDownPress,
+    required this.uvLiftUpLongPressStart,
+    required this.uvLiftUpLongPressEnd,
+    required this.uvLiftDownLongPressStart,
+    required this.uvLiftDownLongPressEnd,
+    required this.onPowderVibPress,
+    required this.onUVEMVPress,
+    required this.liftUpButtonColor,
+    required this.liftDownButtonColor,
   }) : super(key: key);
 
   @override

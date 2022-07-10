@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class PrecentValueShow extends StatelessWidget {
   final String precentValue;
-  const PrecentValueShow({Key key, @required this.precentValue})
+  const PrecentValueShow({Key? key, required this.precentValue})
       : super(key: key);
 
   @override

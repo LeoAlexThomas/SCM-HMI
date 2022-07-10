@@ -11,9 +11,9 @@ class AppColors {
   static Color white = Colors.white;
   static Color darkBlue = Color.fromRGBO(0, 85, 165, 1);
   static Color customRed = Color.fromRGBO(158, 0, 0, 1);
-  static Color red = Colors.redAccent[700];
+  static Color? red = Colors.redAccent[700];
   static Color orange = Colors.deepOrange;
-  static Color grey = Colors.grey[300];
+  static Color? grey = Colors.grey[300];
   static Color green = Colors.green;
   static Color headbgColor = Color.fromRGBO(32, 56, 100, 1);
   static Color text_sv_color = Color.fromRGBO(32, 56, 100, 1);
@@ -25,8 +25,7 @@ class DataContentShow {
     return TableRow(
       children: [
         Text(""),
-        Align(
-          alignment: Alignment.center,
+        Center(
           child: Text(
             "PRESENT",
             style: TextStyle(
@@ -36,8 +35,7 @@ class DataContentShow {
             ),
           ),
         ),
-        Align(
-          alignment: Alignment.center,
+        Center(
           child: Text(
             'SET',
             style: TextStyle(
@@ -47,8 +45,7 @@ class DataContentShow {
             ),
           ),
         ),
-        Align(
-          alignment: Alignment.center,
+        Center(
           child: Text(
             'CONTROLS',
             style: TextStyle(
@@ -63,20 +60,20 @@ class DataContentShow {
   }
 
   static TableRow getRowContent({
-    @required String rowTitle,
-    @required bool isControllerOn,
-    @required String precentValue,
-    @required String setValue,
+    required String rowTitle,
+    required bool isControllerOn,
+    required String precentValue,
+    required String setValue,
     bool isPourContent = false,
     bool isControllerNeed = true,
-    Color controllerColor = Colors.grey,
-    @required String buttonLabel,
-    @required VoidCallback onIncreament,
-    @required VoidCallback onDecreament,
-    @required VoidCallback onPress,
-    @required Function(dynamic) onIncLongPressStart,
-    @required Function(dynamic) onDecLongPressStart,
-    @required Function(dynamic) onLongPressEnd,
+    Color? controllerColor = Colors.grey,
+    required String? buttonLabel,
+    required VoidCallback? onIncreament,
+    required VoidCallback? onDecreament,
+    required VoidCallback? onPress,
+    required Function(dynamic)? onIncLongPressStart,
+    required Function(dynamic)? onDecLongPressStart,
+    required Function(dynamic)? onLongPressEnd,
   }) {
     return TableRow(
       children: [
@@ -103,7 +100,7 @@ class DataContentShow {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      buttonLabel,
+                      buttonLabel!,
                       style: TextStyle(
                         fontFamily: 'digital',
                         color: AppColors.headbgColor,
@@ -148,12 +145,21 @@ class CustomTextStyle {
 }
 
 class SnackbarService {
+  static bool isSnackbarActive = false;
+
   static void showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.fixed,
-      ),
-    );
+    if (isSnackbarActive) {
+      return;
+    }
+    isSnackbarActive = true;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+          SnackBar(
+            content: Text(message),
+            behavior: SnackBarBehavior.fixed,
+          ),
+        )
+        .closed
+        .then((value) => isSnackbarActive = false);
   }
 }

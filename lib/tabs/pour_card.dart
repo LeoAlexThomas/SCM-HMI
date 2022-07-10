@@ -5,29 +5,29 @@ import 'package:StirCastingMachine/widget/card_header.dart';
 import 'package:flutter/material.dart';
 
 class PouringCard extends StatelessWidget {
-  final String buttonLabel;
-  final Color buttonColor;
+  final String? buttonLabel;
+  final Color? buttonColor;
   final String operationName;
-  final VoidCallback onPress;
+  final VoidCallback? onPress;
   final String precentValue;
-  final String setValue;
-  final Widget subTitle;
-  final VoidCallback onIncreament;
-  final VoidCallback ondecreament;
-  final Function(dynamic) onIncLongPressStart;
-  final Function(dynamic) onDecLongPressStart;
-  final Function(dynamic) onLongPressEnd;
+  final String? setValue;
+  final Widget? subTitle;
+  final VoidCallback? onIncreament;
+  final VoidCallback? ondecreament;
+  final Function(dynamic)? onIncLongPressStart;
+  final Function(dynamic)? onDecLongPressStart;
+  final Function(dynamic)? onLongPressEnd;
   final Calculation calc;
 
   PouringCard({
-    Key key,
-    @required this.buttonLabel,
-    @required this.buttonColor,
-    @required this.operationName,
-    @required this.precentValue,
-    @required this.setValue,
-    @required this.onPress,
-    @required this.calc,
+    Key? key,
+    required this.buttonLabel,
+    required this.buttonColor,
+    required this.operationName,
+    required this.precentValue,
+    required this.setValue,
+    required this.onPress,
+    required this.calc,
     this.subTitle,
     this.onIncreament,
     this.ondecreament,
@@ -40,7 +40,7 @@ class PouringCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.symmetric(vertical: SizeConfig.screen_height * 1),
+      // padding: EdgeInsets.symmetric(vertical: SizeConfig.screen_height * 1),
       margin: EdgeInsets.symmetric(vertical: SizeConfig.screen_height * 0.5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +62,7 @@ class PouringCard extends StatelessWidget {
                 isControllerOn: false,
                 controllerColor: buttonColor,
                 precentValue: precentValue,
-                setValue: setValue,
+                setValue: setValue!,
                 isPourContent: true,
                 buttonLabel: buttonLabel,
                 onIncreament: onIncreament,
