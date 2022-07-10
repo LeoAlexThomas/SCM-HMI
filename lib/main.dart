@@ -3068,30 +3068,30 @@ class _MainAppSampleState extends State<MainAppSample> {
         if (d_pv_furnace == 0 || d_pv_melt == 0) {
           if (d_pv_furnace == 0) {
             if (warningText.contains("No Worry!")) {
-              warningText = "Check Furnace Thermocouple!";
+              warningText = "Check Furnace Temp. Sensor!";
             } else {
-              if (!warningText.contains("Check Furnace Thermocouple!")) {
-                warningText += " Check Furnace Thermocouple!";
+              if (!warningText.contains("Check Furnace Temp. Sensor!")) {
+                warningText += " Check Furnace Temp. Sensor!";
               }
             }
           } else {
-            if (warningText.contains("Check Furnace Thermocouple!")) {
-              warningText.replaceAll("Check Furnace Thermocouple!", "");
+            if (warningText.contains("Check Furnace Temp. Sensor!")) {
+              warningText.replaceAll("Check Furnace Temp. Sensor!", "");
             }
           }
 
           if (d_pv_melt == 0) {
             if (warningText.contains("No Worry!")) {
-              warningText = "Check Melt Thermocouple!";
+              warningText = "Check Melt Temp. Sensor!";
             } else {
-              if (!warningText.contains("Check Melt Thermocouple!")) {
-                warningText += " Check Melt Thermocouple!";
+              if (!warningText.contains("Check Melt Temp. Sensor!")) {
+                warningText += " Check Melt Temp. Sensor!";
               }
             }
           } else {
-            if (warningText.contains("Check Melt Thermocouple!")) ;
+            if (warningText.contains("Check Melt Temp. Sensor!")) ;
             {
-              warningText.replaceAll("Check Melt Thermocouple!", "");
+              warningText.replaceAll("Check Melt Temp. Sensor!", "");
             }
           }
         }
@@ -3121,15 +3121,15 @@ class _MainAppSampleState extends State<MainAppSample> {
         //For Powder
         if (d_pv_powder == 0) {
           if (warningText.contains("No Worry!")) {
-            warningText = "Check Powder Thermocouple!";
+            warningText = "Check Powder Temp. Sensor!";
           } else {
-            if (!warningText.contains("Check Powder Thermocouple!")) {
-              warningText += " Check Powder Thermocouple!";
+            if (!warningText.contains("Check Powder Temp. Sensor!")) {
+              warningText += " Check Powder Temp. Sensor!";
             }
           }
         } else {
-          if (warningText.contains("Check Powder Thermocouple!")) {
-            warningText.replaceAll("Check Powder Thermocouple!", "");
+          if (warningText.contains("Check Powder Temp. Sensor!")) {
+            warningText.replaceAll("Check Powder Temp. Sensor!", "");
           }
         }
         if (b_btn_Powder) {
@@ -3157,15 +3157,15 @@ class _MainAppSampleState extends State<MainAppSample> {
         //For Mould
         if (d_pv_mould == 0) {
           if (warningText.contains("No Worry!")) {
-            warningText = "Check Mould Thermocouple!";
+            warningText = "Check Mould Temp. Sensor!";
           } else {
-            if (!warningText.contains("Check Mould Thermocouple!")) {
-              warningText += " Check Mould Thermocouple!";
+            if (!warningText.contains("Check Mould Temp. Sensor!")) {
+              warningText += " Check Mould Temp. Sensor!";
             }
           }
         } else {
-          if (warningText.contains("Check Mould Thermocouple!")) {
-            warningText.replaceAll("Check Mould Thermocouple!", "");
+          if (warningText.contains("Check Mould Temp. Sensor!")) {
+            warningText.replaceAll("Check Mould Temp. Sensor!", "");
           }
         }
         if (b_btn_Mould) {
@@ -3193,15 +3193,15 @@ class _MainAppSampleState extends State<MainAppSample> {
         //For Runway
         if (d_pv_runway == 0) {
           if (warningText.contains("No Worry!")) {
-            warningText = "Check Runway Thermocouple!";
+            warningText = "Check Runway Temp. Sensor!";
           } else {
-            if (!warningText.contains("Check Runway Thermocouple!")) {
-              warningText += " Check Runway Thermocouple!";
+            if (!warningText.contains("Check Runway Temp. Sensor!")) {
+              warningText += " Check Runway Temp. Sensor!";
             }
           }
         } else {
-          if (warningText.contains("Check Runway Thermocouple!")) {
-            warningText.replaceAll("Check Runway Thermocouple!", "");
+          if (warningText.contains("Check Runway Temp. Sensor!")) {
+            warningText.replaceAll("Check Runway Temp. Sensor!", "");
           }
         }
         if (b_btn_Runway) {
