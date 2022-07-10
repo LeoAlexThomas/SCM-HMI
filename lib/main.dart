@@ -3060,8 +3060,34 @@ class _MainAppSampleState extends State<MainAppSample> {
         //For Furnace
         if (b_btn_Furance) {
           if (d_pv_furnace == 0 || d_pv_melt == 0) {
-            if (d_pv_furnace == 0) warningText += "Check Furnace plug";
-            if (d_pv_melt == 0) warningText += "Check Melt plug";
+            if (d_pv_furnace == 0) {
+              if (warningText.contains("No Worry")) {
+                warningText = "Check Furnace Thermocouple";
+              } else {
+                if (!warningText.contains("Check Furnace Thermocouple")) {
+                  warningText += "Check Furnace Thermocouple";
+                }
+              }
+            } else {
+              if (warningText.contains("Check Furnace Thermocouple")) {
+                warningText.replaceAll("Check Furnace Thermocouple", "");
+              }
+            }
+
+            if (d_pv_melt == 0) {
+              if (warningText.contains("No Worry")) {
+                warningText = "Check Melt Thermocouple";
+              } else {
+                if (!warningText.contains("Check Melt Thermocouple")) {
+                  warningText += "Check Melt Thermocouple";
+                }
+              }
+            } else {
+              if (warningText.contains("Check Melt Thermocouple")) ;
+              {
+                warningText.replaceAll("Check Melt Thermocouple", "");
+              }
+            }
             bFurnaceHeatOUT = false;
           } else {
             dFurnaceOut = calc.temp_CalOutPercent(
@@ -3086,9 +3112,14 @@ class _MainAppSampleState extends State<MainAppSample> {
         //For Powder
         if (b_btn_Powder) {
           if (d_pv_powder == 0) {
-            warningText += "Check Powder plug";
+            if (!warningText.contains("Check Powder Thermocouple")) {
+              warningText += "Check Powder Thermocouple";
+            }
             bPowderHeatOUT = false;
           } else {
+            if (warningText.contains("Check Powder Thermocouple")) {
+              warningText.replaceAll("Check Powder Thermocouple", "");
+            }
             dPowderOut = calc.temp_CalOutPercent(
                 d_pv_powder, d_sv_powder, dPowderMaxTime, 0);
             dPowderOFFTime = (10 - dPowderOut);
@@ -3110,9 +3141,14 @@ class _MainAppSampleState extends State<MainAppSample> {
         //For Mould
         if (b_btn_Mould) {
           if (d_pv_mould == 0) {
-            warningText += "Check Mould plug";
+            if (!warningText.contains("Check Mould Thermocouple")) {
+              warningText += "Check Mould Thermocouple";
+            }
             bMouldHeatOUT = false;
           } else {
+            if (warningText.contains("Check Mould Thermocouple")) {
+              warningText.replaceAll("Check Mould Thermocouple", "");
+            }
             dMouldOut = calc.temp_CalOutPercent(
                 d_pv_mould, d_sv_mould, dMouldMaxTime, 0);
             dMouldOFFTime = (10 - dMouldOut);
@@ -3134,9 +3170,14 @@ class _MainAppSampleState extends State<MainAppSample> {
         //For Runway
         if (b_btn_Runway) {
           if (d_pv_runway == 0) {
-            warningText += "Check Runway plug";
+            if (!warningText.contains("Check Runway Thermocouple")) {
+              warningText += "Check Runway Thermocouple";
+            }
             bRunwayHeatOUT = false;
           } else {
+            if (warningText.contains("Check Runway Thermocouple")) {
+              warningText.replaceAll("Check Runway Thermocouple", "");
+            }
             dRunwayOut = calc.temp_CalOutPercent(
                 d_pv_runway, d_sv_runway, dRunwayMaxTime, 0);
             dRunwayOFFTime = (10 - dRunwayOut);

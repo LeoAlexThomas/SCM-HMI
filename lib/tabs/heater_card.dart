@@ -123,7 +123,7 @@ class HeaterCard extends StatelessWidget {
                 onLongPressEnd: onLongPressEnd,
               ),
               DataContentShow.getRowContent(
-                rowTitle: "2) Melt",
+                rowTitle: "2) MELT",
                 isControllerOn: false,
                 controllerColor: furnaceButtonColor,
                 precentValue: meltPrecentValue,
@@ -139,7 +139,7 @@ class HeaterCard extends StatelessWidget {
                 onLongPressEnd: onLongPressEnd,
               ),
               DataContentShow.getRowContent(
-                rowTitle: "3) Powder",
+                rowTitle: "3) POWDER",
                 isControllerOn: isPowderOn,
                 precentValue: powderPrecentValue,
                 controllerColor: powderButtonColor,
