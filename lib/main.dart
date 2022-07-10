@@ -1079,7 +1079,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: SizeConfig.screen_height * 1),
+                                const Spacer(flex: 3),
                                 Text(
                                   'Before HEATING (@COLD Conditions)',
                                   style: TextStyle(
@@ -1100,8 +1100,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                                 InstructionTextView(
                                     instruction:
                                         'When the FURNACE is heated, bring down the stirrer blade inside the retort to allow the non-stick coating to dry.'),
-                                SizedBox(
-                                    height: SizeConfig.screen_height * 1.25),
+                                const Spacer(flex: 4),
                                 Padding(
                                   padding: EdgeInsets.only(
                                       bottom: SizeConfig.screen_height * 0.5),
@@ -1140,6 +1139,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                                   instruction:
                                       'LOAD the materials in the RETORT',
                                 ),
+                                const SizedBox(height: 10),
                               ],
                             ),
                           ),
@@ -1215,7 +1215,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                                       ),
                                       SizedBox(
                                           height:
-                                              SizeConfig.screen_height * 1.25),
+                                              SizeConfig.screen_height * 3.25),
                                       Text(
                                         'DON’Ts',
                                         style: TextStyle(
@@ -1254,9 +1254,10 @@ class _MainAppSampleState extends State<MainAppSample> {
                           color: Colors.white,
                           width: SizeConfig.screen_width * 42,
                           height: SizeConfig.screen_height * 5,
+                          alignment: Alignment.center,
                           child: MarqueeText(
                             text: TextSpan(text: warningText),
-                            speed: 30,
+                            speed: 10,
                             alwaysScroll: true,
                           ),
                         )
