@@ -86,7 +86,7 @@ class _MainAppSampleState extends State<MainAppSample> {
   ];
   String wholemsg = '';
 
-  String warningText = "No Worry";
+  String warningText = "No Worry!";
 
   bool b_admin_login = false;
 // btn State for sending
@@ -1260,7 +1260,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                             speed: 10,
                             alwaysScroll: true,
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -2384,7 +2384,7 @@ class _MainAppSampleState extends State<MainAppSample> {
       try {
         if (connection != null) {
           connection?.input?.listen((Uint8List data) async {
-            receiver(data);
+            displayText(data);
           }).onDone(() {
             connection?.finish();
           });
@@ -2448,7 +2448,7 @@ class _MainAppSampleState extends State<MainAppSample> {
       try {
         if (connection != null) {
           connection?.input!.listen((Uint8List data) async {
-            receiver(data);
+            displayText(data);
           }).onDone(() {
             // Bluetooth disconnected
             connection?.finish();
@@ -2547,7 +2547,8 @@ class _MainAppSampleState extends State<MainAppSample> {
     try {
       socket.listen((event) {
         Timer(Duration(milliseconds: 500), () {
-          receiver(event);
+          // receiver(event);
+          displayText(event);
         });
       });
     } catch (e) {
@@ -2572,234 +2573,238 @@ class _MainAppSampleState extends State<MainAppSample> {
     return dReturnValue;
   }
 
-  void receiver(Uint8List event) {
-    try {
-      String s = String.fromCharCodes(event);
-      log("Data: ${s.indexOf("e")}");
-      if ((s.substring(0, 4) == "ccc@") &&
-          (b_data_logger_available
-              ? s.substring(44, 47) == "eee"
-              : s.substring(35, 38) == "eee")) {
-        displayText(s);
-        return;
-      }
-      if (s.contains('@')) {
-        var startIdx = s.indexOf("@");
-        if (!s.endsWith('@')) {
-          for (int i = startIdx + 1; i < s.length; i++) {
-            sRxDataStart = sRxDataStart + s[i];
-          }
-        }
-        s = '';
-        bDataStart = true;
-        bDataStop = false;
-      }
-      if (s.contains('e')) {
-        var endIdx = s.indexOf("e");
-        if (!s.startsWith('e')) {
-          for (int i = endIdx - 1; i >= 0; i--) {
-            sRxDataEnd = sRxDataEnd + s[i];
-          }
-          sRxDataEnd = sRxDataEnd.split('').reversed.join();
-        }
-        s = '';
-        bDataStop = true;
-      }
-      if (bDataStart) {
-        if (!bDataStop) {
-          sRxDataMiddle = sRxDataMiddle + s;
-          s = '';
-        } else {
-          sRxData = sRxDataStart + sRxDataMiddle + sRxDataEnd;
-          displayText(sRxData);
-          bDataStop = false;
-          bDataStart = false;
-          s = '';
-          sRxData = '';
-          sRxDataStart = '';
-          sRxDataMiddle = '';
-          sRxDataEnd = '';
-        }
-      }
-    } catch (e) {
-      if (!errMsgReceiveMsg) {
-        logFile.writeLogfile('Exception in receiver: $e');
-        setState(() {
-          errMsgReceiveMsg = true;
-        });
-      }
-    }
-  }
+  // void receiver(Uint8List event) {
+  //   try {
+  //     String s = String.fromCharCodes(event);
+  //     log("Data: ${s.indexOf("e")}");
+  //     if ((s.substring(0, 4) == "ccc@") &&
+  //         (b_data_logger_available
+  //             ? s.substring(44, 47) == "eee"
+  //             : s.substring(35, 38) == "eee")) {
+  //       displayText(s);
+  //       return;
+  //     }
+  //     if (s.contains('@')) {
+  //       var startIdx = s.indexOf("@");
+  //       if (!s.endsWith('@')) {
+  //         for (int i = startIdx + 1; i < s.length; i++) {
+  //           sRxDataStart = sRxDataStart + s[i];
+  //         }
+  //       }
+  //       s = '';
+  //       bDataStart = true;
+  //       bDataStop = false;
+  //     }
+  //     if (s.contains('e')) {
+  //       var endIdx = s.indexOf("e");
+  //       if (!s.startsWith('e')) {
+  //         for (int i = endIdx - 1; i >= 0; i--) {
+  //           sRxDataEnd = sRxDataEnd + s[i];
+  //         }
+  //         sRxDataEnd = sRxDataEnd.split('').reversed.join();
+  //       }
+  //       s = '';
+  //       bDataStop = true;
+  //     }
+  //     if (bDataStart) {
+  //       if (!bDataStop) {
+  //         sRxDataMiddle = sRxDataMiddle + s;
+  //         s = '';
+  //       } else {
+  //         sRxData = sRxDataStart + sRxDataMiddle + sRxDataEnd;
+  //         displayText(sRxData);
+  //         bDataStop = false;
+  //         bDataStart = false;
+  //         s = '';
+  //         sRxData = '';
+  //         sRxDataStart = '';
+  //         sRxDataMiddle = '';
+  //         sRxDataEnd = '';
+  //       }
+  //     }
+  //   } catch (e) {
+  //     if (!errMsgReceiveMsg) {
+  //       logFile.writeLogfile('Exception in receiver: $e');
+  //       setState(() {
+  //         errMsgReceiveMsg = true;
+  //       });
+  //     }
+  //   }
+  // }
 
-  Future<void> displayText(String text) async {
+  Future<void> displayText(Uint8List data) async {
     try {
-      if (!text.isEmpty) {
-        // if ((text.length > 23) &&
-        //     (text.length < (b_data_logger_available ? 51 : 33))) {
-        final intialIndex = text.indexOf('@');
-        text =
-            text.substring(intialIndex + 1, b_data_logger_available ? 46 : 33);
+      String text = String.fromCharCodes(data);
+      if (text.contains("@")) {
+        if (!text.isEmpty) {
+          bDataReceived = true;
 
-        log("Last char:$text");
-        if (debugging == 'Y') {
-          rxDataDebug(text);
-        }
-        // log("${text.codeUnitAt(0)}${text.codeUnitAt(1)} - ${text.codeUnitAt(2)}${text.codeUnitAt(3)} - ${text.codeUnitAt(4)}${text.codeUnitAt(5)} - ${text.codeUnitAt(6)}${text.codeUnitAt(7)} - ${text.codeUnitAt(8)}${text.codeUnitAt(9)} - ${text.codeUnitAt(10)}${text.codeUnitAt(11)} - ");
-        setState(
-          () {
-            d_pv_furnace = dvalidateTemperature(
-                int.parse(
-                  text.codeUnitAt(0).toString().padLeft(2, '0') +
-                      text.codeUnitAt(1).toString().padLeft(2, '0'),
-                ),
-                d_pv_furnace);
-            d_pv_melt = dvalidateTemperature(
-                int.parse(
-                  text.codeUnitAt(2).toString().padLeft(2, '0') +
-                      text.codeUnitAt(3).toString().padLeft(2, '0'),
-                ),
-                d_pv_melt);
-            d_pv_powder = dvalidateTemperature(
-                int.parse(
-                  text.codeUnitAt(4).toString().padLeft(2, '0') +
-                      text.codeUnitAt(5).toString().padLeft(2, '0'),
-                ),
-                d_pv_powder);
-            d_pv_mould = dvalidateTemperature(
-                int.parse(
-                  text.codeUnitAt(6).toString().padLeft(2, '0') +
-                      text.codeUnitAt(7).toString().padLeft(2, '0'),
-                ),
-                d_pv_mould);
-            if (b_squeeze_available) {
-              d_pv_runway = dvalidateTemperature(
+          // if ((text.length > 23) &&
+          //     (text.length < (b_data_logger_available ? 51 : 33))) {
+          final intialIndex = text.indexOf('@');
+          text = text.substring(
+              intialIndex + 1, b_data_logger_available ? 46 : 33);
+
+          if (debugging == 'Y') {
+            rxDataDebug(text);
+          }
+          // log("${text.codeUnitAt(0)}${text.codeUnitAt(1)} - ${text.codeUnitAt(2)}${text.codeUnitAt(3)} - ${text.codeUnitAt(4)}${text.codeUnitAt(5)} - ${text.codeUnitAt(6)}${text.codeUnitAt(7)} - ${text.codeUnitAt(8)}${text.codeUnitAt(9)} - ${text.codeUnitAt(10)}${text.codeUnitAt(11)} - ");
+          setState(
+            () {
+              d_pv_furnace = dvalidateTemperature(
                   int.parse(
-                    text.codeUnitAt(8).toString().padLeft(2, '0') +
-                        text.codeUnitAt(9).toString().padLeft(2, '0'),
+                    text.codeUnitAt(0).toString().padLeft(2, '0') +
+                        text.codeUnitAt(1).toString().padLeft(2, '0'),
                   ),
-                  d_pv_runway);
-            }
-            // d_pv_spare = text.codeUnitAt(10) + text.codeUnitAt(11);
-            d_pv_stirrer = stirValidate(
-                int.parse(
-                  text.codeUnitAt(12).toString().padLeft(2, '0') +
-                      text.codeUnitAt(13).toString().padLeft(2, '0'),
-                ),
-                d_pv_stirrer);
-            if (!b_btn_Stirrer) {
-              setState(() {
-                d_pv_stirrer = 0;
-              });
-            }
+                  d_pv_furnace);
+              d_pv_melt = dvalidateTemperature(
+                  int.parse(
+                    text.codeUnitAt(2).toString().padLeft(2, '0') +
+                        text.codeUnitAt(3).toString().padLeft(2, '0'),
+                  ),
+                  d_pv_melt);
+              d_pv_powder = dvalidateTemperature(
+                  int.parse(
+                    text.codeUnitAt(4).toString().padLeft(2, '0') +
+                        text.codeUnitAt(5).toString().padLeft(2, '0'),
+                  ),
+                  d_pv_powder);
+              d_pv_mould = dvalidateTemperature(
+                  int.parse(
+                    text.codeUnitAt(6).toString().padLeft(2, '0') +
+                        text.codeUnitAt(7).toString().padLeft(2, '0'),
+                  ),
+                  d_pv_mould);
+              if (b_squeeze_available) {
+                d_pv_runway = dvalidateTemperature(
+                    int.parse(
+                      text.codeUnitAt(8).toString().padLeft(2, '0') +
+                          text.codeUnitAt(9).toString().padLeft(2, '0'),
+                    ),
+                    d_pv_runway);
+              }
+              // d_pv_spare = text.codeUnitAt(10) + text.codeUnitAt(11);
+              d_pv_stirrer = stirValidate(
+                  int.parse(
+                    text.codeUnitAt(12).toString().padLeft(2, '0') +
+                        text.codeUnitAt(13).toString().padLeft(2, '0'),
+                  ),
+                  d_pv_stirrer);
+              if (!b_btn_Stirrer) {
+                setState(() {
+                  d_pv_stirrer = 0;
+                });
+              }
 
-            if (b_centrifugal_available) {
-              d_pv_centrifuge = int.parse(
-                  text.codeUnitAt(14).toString().padLeft(2, '0') +
-                      text.codeUnitAt(15).toString().padLeft(2, '0'));
-              if (!b_btn_Centrifugal) {
+              if (b_centrifugal_available) {
+                d_pv_centrifuge = int.parse(
+                    text.codeUnitAt(14).toString().padLeft(2, '0') +
+                        text.codeUnitAt(15).toString().padLeft(2, '0'));
+                if (!b_btn_Centrifugal) {
+                  d_pv_centrifuge = 0;
+                }
+              } else {
                 d_pv_centrifuge = 0;
               }
-            } else {
-              d_pv_centrifuge = 0;
-            }
 
-            if (b_inert_available) {
-              d_pv_gas_flow = int.parse(
-                  text.codeUnitAt(16).toString().padLeft(2, '0') +
-                      text.codeUnitAt(17).toString().padLeft(2, '0'));
-              d_pv_gas_flow = dCalibratedGasValue(d_pv_gas_flow);
-            } else {
-              d_pv_gas_flow = 0;
-            }
-
-            if (b_squeeze_available) {
-              d_pv_sqz_prsr = dCalibratedSqzPrsrValue(
-                  int.parse(
-                    text.codeUnitAt(18).toString().padLeft(2, '0') +
-                        text.codeUnitAt(19).toString().padLeft(2, '0'),
-                  ),
-                  d_pv_sqz_prsr);
-            } else {
-              d_pv_sqz_prsr = 0;
-            }
-            // Getting the 20th character and
-            // Converting the string to int and
-            // then convert to binary using bulid in method called 'toRadixString()'
-            var sig = text.codeUnitAt(20).toRadixString(2);
-            sig = sig.padLeft(6, '0');
-
-            if (b_uv_vib_available) {
-              if (int.parse(sig.substring(0, 1)) == 1) {
-                //Sgnal 1 & UV up
-                d_pv_UV_lift_pos = 1;
-              } else if (int.parse(sig.substring(1, 2)) == 1) {
-                //Sgnal 2 & UV down
-                d_pv_UV_lift_pos = 2;
+              if (b_inert_available) {
+                d_pv_gas_flow = int.parse(
+                    text.codeUnitAt(16).toString().padLeft(2, '0') +
+                        text.codeUnitAt(17).toString().padLeft(2, '0'));
+                d_pv_gas_flow = dCalibratedGasValue(d_pv_gas_flow);
               } else {
-                // in Operation
+                d_pv_gas_flow = 0;
+              }
+
+              if (b_squeeze_available) {
+                d_pv_sqz_prsr = dCalibratedSqzPrsrValue(
+                    int.parse(
+                      text.codeUnitAt(18).toString().padLeft(2, '0') +
+                          text.codeUnitAt(19).toString().padLeft(2, '0'),
+                    ),
+                    d_pv_sqz_prsr);
+              } else {
+                d_pv_sqz_prsr = 0;
+              }
+              // Getting the 20th character and
+              // Converting the string to int and
+              // then convert to binary using bulid in method called 'toRadixString()'
+              var sig = text.codeUnitAt(20).toRadixString(2);
+              sig = sig.padLeft(6, '0');
+
+              if (b_uv_vib_available) {
+                if (int.parse(sig.substring(0, 1)) == 1) {
+                  //Sgnal 1 & UV up
+                  d_pv_UV_lift_pos = 1;
+                } else if (int.parse(sig.substring(1, 2)) == 1) {
+                  //Sgnal 2 & UV down
+                  d_pv_UV_lift_pos = 2;
+                } else {
+                  // in Operation
+                  d_pv_UV_lift_pos = 0;
+                }
+              } else {
                 d_pv_UV_lift_pos = 0;
               }
-            } else {
-              d_pv_UV_lift_pos = 0;
-            }
 
-            if (int.parse(sig.substring(2, 3)) == 1) {
-              //Sgnal 3 & Stir down
-              d_pv_lift_pos = 1;
-            } else if (int.parse(sig.substring(3, 4)) == 1) {
-              //Sgnal 4 & Stir up
-              d_pv_lift_pos = 2;
-            } else {
-              // in Operation
-              d_pv_lift_pos = 0;
-            }
-            if (int.parse(sig.substring(4, 5)) == 1) {
-              //Sgnal 5 & Pour close
-              d_pv_pour_pos = 1;
-            } else if (int.parse(sig.substring(5, 6)) == 1) {
-              //Sgnal 6 & Pour open
-              d_pv_pour_pos = 2;
-            } else {
-              // in Operation
-              d_pv_pour_pos = 0;
-            }
-            if (d_pv_lift_pos == 1) {
-              b_stirrer_down = true;
-            } else {
-              b_stirrer_down = false;
-            }
-            // For Data Logger
-            if (b_data_logger_available) {
-              d_pv_data_logger_temp_a = d_Validate_DataLog_Temp(
-                  int.parse(text.codeUnitAt(31).toString().padLeft(2, '0') +
-                      text.codeUnitAt(32).toString().padLeft(2, '0')),
-                  d_pv_data_logger_temp_a);
-              d_pv_data_logger_temp_b = d_Validate_DataLog_Temp(
-                  int.parse(text.codeUnitAt(33).toString().padLeft(2, '0') +
-                      text.codeUnitAt(34).toString().padLeft(2, '0')),
-                  d_pv_data_logger_temp_b);
-              d_pv_data_logger_temp_c = d_Validate_DataLog_Temp(
-                  int.parse(text.codeUnitAt(35).toString().padLeft(2, '0') +
-                      text.codeUnitAt(36).toString().padLeft(2, '0')),
-                  d_pv_data_logger_temp_c);
-              d_pv_data_logger_temp_d = d_Validate_DataLog_Temp(
-                  int.parse(text.codeUnitAt(37).toString().padLeft(2, '0') +
-                      text.codeUnitAt(38).toString().padLeft(2, '0')),
-                  d_pv_data_logger_temp_d);
-            } else {
-              d_pv_data_logger_temp_a = 30;
-              d_pv_data_logger_temp_b = 30;
-              d_pv_data_logger_temp_c = 30;
-              d_pv_data_logger_temp_d = 30;
-            }
-            // validaterxData(text);
-            bDataReceived = true;
-          },
-        );
-        // } else {
-        //   LogEntryStorage().writeLogfile(
-        //       'Data not in a given limit: ${text.codeUnits}\nData length: ${text.length}');
-        // }
+              if (int.parse(sig.substring(2, 3)) == 1) {
+                //Sgnal 3 & Stir down
+                d_pv_lift_pos = 1;
+              } else if (int.parse(sig.substring(3, 4)) == 1) {
+                //Sgnal 4 & Stir up
+                d_pv_lift_pos = 2;
+              } else {
+                // in Operation
+                d_pv_lift_pos = 0;
+              }
+              if (int.parse(sig.substring(4, 5)) == 1) {
+                //Sgnal 5 & Pour close
+                d_pv_pour_pos = 1;
+              } else if (int.parse(sig.substring(5, 6)) == 1) {
+                //Sgnal 6 & Pour open
+                d_pv_pour_pos = 2;
+              } else {
+                // in Operation
+                d_pv_pour_pos = 0;
+              }
+              if (d_pv_lift_pos == 1) {
+                b_stirrer_down = true;
+              } else {
+                b_stirrer_down = false;
+              }
+              // For Data Logger
+              if (b_data_logger_available) {
+                d_pv_data_logger_temp_a = d_Validate_DataLog_Temp(
+                    int.parse(text.codeUnitAt(31).toString().padLeft(2, '0') +
+                        text.codeUnitAt(32).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_a);
+                d_pv_data_logger_temp_b = d_Validate_DataLog_Temp(
+                    int.parse(text.codeUnitAt(33).toString().padLeft(2, '0') +
+                        text.codeUnitAt(34).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_b);
+                d_pv_data_logger_temp_c = d_Validate_DataLog_Temp(
+                    int.parse(text.codeUnitAt(35).toString().padLeft(2, '0') +
+                        text.codeUnitAt(36).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_c);
+                d_pv_data_logger_temp_d = d_Validate_DataLog_Temp(
+                    int.parse(text.codeUnitAt(37).toString().padLeft(2, '0') +
+                        text.codeUnitAt(38).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_d);
+              } else {
+                d_pv_data_logger_temp_a = 30;
+                d_pv_data_logger_temp_b = 30;
+                d_pv_data_logger_temp_c = 30;
+                d_pv_data_logger_temp_d = 30;
+              }
+              // validaterxData(text);
+              // bDataReceived = true;
+            },
+          );
+          // } else {
+          //   LogEntryStorage().writeLogfile(
+          //       'Data not in a given limit: ${text.codeUnits}\nData length: ${text.length}');
+          // }
+        }
       }
     } catch (e) {
       if (!errMsgDisplaytext) {
@@ -2997,6 +3002,7 @@ class _MainAppSampleState extends State<MainAppSample> {
           b_ringtone = false;
         } else {
           dDataReceivedIndex++;
+          print("Datareceived index: $dDataReceivedIndex");
           if (dDataReceivedIndex >= 10) {
             btns['btnMain']!['btnState'] = 'DisConnected';
             dDataReceivedIndex = 0;
@@ -3059,36 +3065,38 @@ class _MainAppSampleState extends State<MainAppSample> {
           }
         }
         //For Furnace
+        if (d_pv_furnace == 0 || d_pv_melt == 0) {
+          if (d_pv_furnace == 0) {
+            if (warningText.contains("No Worry!")) {
+              warningText = "Check Furnace Thermocouple!";
+            } else {
+              if (!warningText.contains("Check Furnace Thermocouple!")) {
+                warningText += " Check Furnace Thermocouple!";
+              }
+            }
+          } else {
+            if (warningText.contains("Check Furnace Thermocouple!")) {
+              warningText.replaceAll("Check Furnace Thermocouple!", "");
+            }
+          }
+
+          if (d_pv_melt == 0) {
+            if (warningText.contains("No Worry!")) {
+              warningText = "Check Melt Thermocouple!";
+            } else {
+              if (!warningText.contains("Check Melt Thermocouple!")) {
+                warningText += " Check Melt Thermocouple!";
+              }
+            }
+          } else {
+            if (warningText.contains("Check Melt Thermocouple!")) ;
+            {
+              warningText.replaceAll("Check Melt Thermocouple!", "");
+            }
+          }
+        }
         if (b_btn_Furance) {
           if (d_pv_furnace == 0 || d_pv_melt == 0) {
-            if (d_pv_furnace == 0) {
-              if (warningText.contains("No Worry")) {
-                warningText = "Check Furnace Thermocouple";
-              } else {
-                if (!warningText.contains("Check Furnace Thermocouple")) {
-                  warningText += "Check Furnace Thermocouple";
-                }
-              }
-            } else {
-              if (warningText.contains("Check Furnace Thermocouple")) {
-                warningText.replaceAll("Check Furnace Thermocouple", "");
-              }
-            }
-
-            if (d_pv_melt == 0) {
-              if (warningText.contains("No Worry")) {
-                warningText = "Check Melt Thermocouple";
-              } else {
-                if (!warningText.contains("Check Melt Thermocouple")) {
-                  warningText += "Check Melt Thermocouple";
-                }
-              }
-            } else {
-              if (warningText.contains("Check Melt Thermocouple")) ;
-              {
-                warningText.replaceAll("Check Melt Thermocouple", "");
-              }
-            }
             bFurnaceHeatOUT = false;
           } else {
             dFurnaceOut = calc.temp_CalOutPercent(
@@ -3111,16 +3119,23 @@ class _MainAppSampleState extends State<MainAppSample> {
           b_lbl_furnace = false;
         }
         //For Powder
+        if (d_pv_powder == 0) {
+          if (warningText.contains("No Worry!")) {
+            warningText = "Check Powder Thermocouple!";
+          } else {
+            if (!warningText.contains("Check Powder Thermocouple!")) {
+              warningText += " Check Powder Thermocouple!";
+            }
+          }
+        } else {
+          if (warningText.contains("Check Powder Thermocouple!")) {
+            warningText.replaceAll("Check Powder Thermocouple!", "");
+          }
+        }
         if (b_btn_Powder) {
           if (d_pv_powder == 0) {
-            if (!warningText.contains("Check Powder Thermocouple")) {
-              warningText += "Check Powder Thermocouple";
-            }
             bPowderHeatOUT = false;
           } else {
-            if (warningText.contains("Check Powder Thermocouple")) {
-              warningText.replaceAll("Check Powder Thermocouple", "");
-            }
             dPowderOut = calc.temp_CalOutPercent(
                 d_pv_powder, d_sv_powder, dPowderMaxTime, 0);
             dPowderOFFTime = (10 - dPowderOut);
@@ -3140,16 +3155,23 @@ class _MainAppSampleState extends State<MainAppSample> {
           b_lbl_powder = false;
         }
         //For Mould
+        if (d_pv_mould == 0) {
+          if (warningText.contains("No Worry!")) {
+            warningText = "Check Mould Thermocouple!";
+          } else {
+            if (!warningText.contains("Check Mould Thermocouple!")) {
+              warningText += " Check Mould Thermocouple!";
+            }
+          }
+        } else {
+          if (warningText.contains("Check Mould Thermocouple!")) {
+            warningText.replaceAll("Check Mould Thermocouple!", "");
+          }
+        }
         if (b_btn_Mould) {
           if (d_pv_mould == 0) {
-            if (!warningText.contains("Check Mould Thermocouple")) {
-              warningText += "Check Mould Thermocouple";
-            }
             bMouldHeatOUT = false;
           } else {
-            if (warningText.contains("Check Mould Thermocouple")) {
-              warningText.replaceAll("Check Mould Thermocouple", "");
-            }
             dMouldOut = calc.temp_CalOutPercent(
                 d_pv_mould, d_sv_mould, dMouldMaxTime, 0);
             dMouldOFFTime = (10 - dMouldOut);
@@ -3169,16 +3191,23 @@ class _MainAppSampleState extends State<MainAppSample> {
           b_lbl_mould = false;
         }
         //For Runway
+        if (d_pv_runway == 0) {
+          if (warningText.contains("No Worry!")) {
+            warningText = "Check Runway Thermocouple!";
+          } else {
+            if (!warningText.contains("Check Runway Thermocouple!")) {
+              warningText += " Check Runway Thermocouple!";
+            }
+          }
+        } else {
+          if (warningText.contains("Check Runway Thermocouple!")) {
+            warningText.replaceAll("Check Runway Thermocouple!", "");
+          }
+        }
         if (b_btn_Runway) {
           if (d_pv_runway == 0) {
-            if (!warningText.contains("Check Runway Thermocouple")) {
-              warningText += "Check Runway Thermocouple";
-            }
             bRunwayHeatOUT = false;
           } else {
-            if (warningText.contains("Check Runway Thermocouple")) {
-              warningText.replaceAll("Check Runway Thermocouple", "");
-            }
             dRunwayOut = calc.temp_CalOutPercent(
                 d_pv_runway, d_sv_runway, dRunwayMaxTime, 0);
             dRunwayOFFTime = (10 - dRunwayOut);
@@ -3260,7 +3289,7 @@ class _MainAppSampleState extends State<MainAppSample> {
             d_cen_start_idx++;
         } else
           d_centrifuge_out = 1;
-        if (warningText.isEmpty) warningText = "No worrys !!!";
+        if (warningText.isEmpty) warningText = "No worry!";
       });
     } catch (e) {
       if (!errMsgMasterTimer) {
