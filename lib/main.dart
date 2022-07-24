@@ -1507,8 +1507,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                               if (!b_btn_Centrifugal) {
                                 b_btn_Centrifugal = btnState('centrifuge',
                                     btns['btnCentrifuge'], b_btn_Centrifugal);
-                                d_centrifuge_out =
-                                    d_centrifuge_out ?? 0 + d_cen_min_val;
+                                d_centrifuge_out = d_cen_min_val;
                               } else {
                                 d_pv_centrifuge = 0;
                                 b_btn_Centrifugal = btnState('centrifuge',
@@ -3002,7 +3001,6 @@ class _MainAppSampleState extends State<MainAppSample> {
           b_ringtone = false;
         } else {
           dDataReceivedIndex++;
-          print("Datareceived index: $dDataReceivedIndex");
           if (dDataReceivedIndex >= 10) {
             btns['btnMain']!['btnState'] = 'DisConnected';
             dDataReceivedIndex = 0;
@@ -3269,7 +3267,6 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         if (b_btn_Stirrer) {
           if (d_stirrer_start_idx > 8) {
-            // print('Stirrer from mastertimer: $d_pv_stirrer');
             d_stirrer_out = d_stirrer_out! +
                 calc.d_Calculate_Stirrer_Out(d_pv_stirrer, d_sv_stirrer);
             if (d_stirrer_out! <= 8) d_stirrer_out = 8;
@@ -3281,14 +3278,17 @@ class _MainAppSampleState extends State<MainAppSample> {
         if (b_btn_Centrifugal) {
           if (d_cen_start_idx > 4) {
             d_centrifuge_out = d_centrifuge_out! +
-                calc.d_Calculate_Stirrer_Out(d_pv_centrifuge, d_sv_centrifuge);
+                calc.d_Calculate_Centrifuge_Out(
+                    d_pv_centrifuge, d_sv_centrifuge);
             if (d_centrifuge_out! > d_cen_max_val!)
               d_centrifuge_out = d_cen_max_val;
+            if (d_centrifuge_out! <= 10) d_centrifuge_out = 10;
             d_cen_start_idx = 0;
           } else
             d_cen_start_idx++;
-        } else
+        } else {
           d_centrifuge_out = 1;
+        }
         if (warningText.isEmpty) warningText = "No worry!";
       });
     } catch (e) {
