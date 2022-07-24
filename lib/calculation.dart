@@ -359,6 +359,43 @@ class Calculation {
     return d_inc;
   }
 
+  int d_Calculate_Centrifuge_Out(int dPV, int dSV) {
+    try {
+      int d_inc = 0;
+      if (dPV == 0) {
+        d_inc = 0;
+      } else {
+        if (dPV <= dSV) {
+          int dDiff = dSV - dPV;
+          if (dDiff >= 150)
+            d_inc = 8;
+          else if (dDiff >= 100)
+            d_inc = 6;
+          else if (dDiff >= 60)
+            d_inc = 4;
+          else if (dDiff >= 40)
+            d_inc = 2;
+          else if (dDiff >= 20) d_inc = 1;
+        } else if (dPV > dSV) {
+          int dDiff = dPV - dSV;
+          if (dDiff >= 150)
+            d_inc = -8;
+          else if (dDiff >= 100)
+            d_inc = -6;
+          else if (dDiff >= 60)
+            d_inc = -4;
+          else if (dDiff >= 40)
+            d_inc = -2;
+          else if (dDiff >= 20) d_inc = -1;
+        }
+      }
+      return d_inc;
+    } catch (e) {
+      logFile.writeLogfile('d_Calculate_Stirrer_Out error: $e');
+      return 0;
+    }
+  }
+
   autoJogFunction(autojogtimer, stirpos) {
     try {
       lift_jog_idx++;
