@@ -349,6 +349,7 @@ class RecordStorage {
       return content;
     } catch (e) {
       LogEntryStorage().writeLogfile('Execption in reading RECORD file: $e');
+      return null;
     }
   }
 
@@ -368,6 +369,7 @@ class RecordStorage {
       return file.writeAsString(st, mode: FileMode.append);
     } catch (e) {
       LogEntryStorage().writeLogfile('Execption in writing RECORD file: $e');
+      return null;
     }
   }
 }
@@ -410,6 +412,7 @@ class DataLoggerStorage {
       return file.writeAsString(st, mode: FileMode.append);
     } catch (e) {
       LogEntryStorage().writeLogfile('Execption in writing RECORD file: $e');
+      return null;
     }
   }
 }
@@ -426,6 +429,7 @@ class LogEntryStorage {
       return file.writeAsString(st, mode: FileMode.append);
     } catch (e) {
       print('Execption in writing file: $e');
+      return null;
     }
   }
 }
@@ -446,6 +450,7 @@ class ConnectionStorage {
     } catch (e) {
       LogEntryStorage()
           .writeLogfile('Execption in reading Connection file: $e');
+      return null;
     }
   }
 
@@ -461,6 +466,7 @@ class ConnectionStorage {
     } catch (e) {
       LogEntryStorage()
           .writeLogfile('Execption in writing connection file: $e');
+      return null;
     }
   }
 }
@@ -477,6 +483,7 @@ class PasswordStorage {
       return file.writeAsString(st);
     } catch (e) {
       LogEntryStorage().writeLogfile('Execption in writing password file: $e');
+      return null;
     }
   }
 }
