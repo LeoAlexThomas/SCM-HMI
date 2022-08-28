@@ -70,6 +70,7 @@ class _MainAppSampleState extends State<MainAppSample> {
   late Timer timer, masterTimer;
   int d_table_sino = 0;
   String xlsContent = '';
+  List<TableRow> rxdList = [];
   List excelFileContent = [
     [
       'Si_No',
@@ -85,6 +86,18 @@ class _MainAppSampleState extends State<MainAppSample> {
     ]
   ];
   String wholemsg = '';
+  // DataLogger
+  bool b_data_logger_start_record = false;
+  List<TableRow> rxdDataLoggerList = [];
+  List dataloggerExcelContent = [
+    [
+      'Si_No',
+      'Temp A',
+      'Temp B',
+      'Temp C',
+      'Temp D',
+    ],
+  ];
 
   String warningText = "No Worry!";
 
@@ -1833,6 +1846,43 @@ class _MainAppSampleState extends State<MainAppSample> {
                 gasFlow: d_pv_gas_flow,
                 centrifuge: d_pv_centrifuge,
                 sqzPresure: d_pv_sqz_prsr,
+                excelFileContent: excelFileContent,
+                rxdList: rxdList,
+                b_start_record: b_start_record,
+                onStartRecordPressed: () {
+                  setState(() {
+                    b_start_record = !b_start_record;
+                  });
+                },
+                onAddExcel: (List excelData) {
+                  setState(() {
+                    excelFileContent.add(excelData);
+                  });
+                },
+                onAddRxdList: (TableRow newRow) {
+                  setState(() {
+                    rxdList.add(newRow);
+                  });
+                },
+                onRest: () {
+                  setState(() {
+                    rxdList = [];
+                    excelFileContent = [
+                      [
+                        'Si_No',
+                        'Time',
+                        'Melt',
+                        'Powder',
+                        'Mould',
+                        'Stirrer',
+                        'Gas',
+                        'Pour',
+                        'Squeeze',
+                        'Vaccum'
+                      ]
+                    ];
+                  });
+                },
               );
       } else if (selectedIndex == 4) {
         return SettingsTab(
@@ -1974,6 +2024,38 @@ class _MainAppSampleState extends State<MainAppSample> {
           onDataLoggerStart: (dataStartedValue) {
             setState(() {
               b_btn_Data_Logger = dataStartedValue;
+            });
+          },
+          b_start_record: b_data_logger_start_record,
+          onRest: () {
+            setState(() {
+              rxdList = [];
+              excelFileContent = [
+                [
+                  'Si_No',
+                  'Temp A',
+                  'Temp B',
+                  'Temp C',
+                  'Temp D',
+                ]
+              ];
+            });
+          },
+          onStartRecordPressed: () {
+            setState(() {
+              b_start_record = !b_start_record;
+            });
+          },
+          rxdList: rxdDataLoggerList,
+          excelFileContent: dataloggerExcelContent,
+          onAddExcelContent: (List newData) {
+            setState(() {
+              dataloggerExcelContent.add(newData);
+            });
+          },
+          onAddRxdList: (TableRow newRow) {
+            setState(() {
+              rxdDataLoggerList.add(newRow);
             });
           },
         );
@@ -2775,20 +2857,20 @@ class _MainAppSampleState extends State<MainAppSample> {
               // For Data Logger
               if (b_data_logger_available) {
                 d_pv_data_logger_temp_a = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(31).toString().padLeft(2, '0') +
-                        text.codeUnitAt(32).toString().padLeft(2, '0')),
+                    int.parse(text.codeUnitAt(27).toString().padLeft(2, '0') +
+                        text.codeUnitAt(28).toString().padLeft(2, '0')),
                     d_pv_data_logger_temp_a);
                 d_pv_data_logger_temp_b = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(33).toString().padLeft(2, '0') +
-                        text.codeUnitAt(34).toString().padLeft(2, '0')),
+                    int.parse(text.codeUnitAt(29).toString().padLeft(2, '0') +
+                        text.codeUnitAt(30).toString().padLeft(2, '0')),
                     d_pv_data_logger_temp_b);
                 d_pv_data_logger_temp_c = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(35).toString().padLeft(2, '0') +
-                        text.codeUnitAt(36).toString().padLeft(2, '0')),
+                    int.parse(text.codeUnitAt(31).toString().padLeft(2, '0') +
+                        text.codeUnitAt(32).toString().padLeft(2, '0')),
                     d_pv_data_logger_temp_c);
                 d_pv_data_logger_temp_d = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(37).toString().padLeft(2, '0') +
-                        text.codeUnitAt(38).toString().padLeft(2, '0')),
+                    int.parse(text.codeUnitAt(33).toString().padLeft(2, '0') +
+                        text.codeUnitAt(34).toString().padLeft(2, '0')),
                     d_pv_data_logger_temp_d);
               } else {
                 d_pv_data_logger_temp_a = 30;
@@ -3052,9 +3134,9 @@ class _MainAppSampleState extends State<MainAppSample> {
           d_lift_jog_idx++;
           if (d_lift_jog_idx <= d_sv_autojog) {
             d_sv_lift_pos = 2;
-          } else if (d_lift_jog_idx == d_sv_autojog + 1) {
-            d_sv_lift_pos = 0;
-            d_lift_jog_idx++;
+            // } else if (d_lift_jog_idx > d_sv_autojog) {
+            //   d_sv_lift_pos = 0;
+            //   d_lift_jog_idx++;
           } else {
             if (b_stirrer_down) {
               d_sv_lift_pos = 0;
