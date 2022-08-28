@@ -14,6 +14,13 @@ class DataLogger extends StatefulWidget {
   final int tempC;
   final int tempD;
   final Function(bool) onDataLoggerStart;
+  final VoidCallback onRest;
+  final bool b_start_record;
+  final VoidCallback onStartRecordPressed;
+  final List<TableRow> rxdList;
+  final Function(TableRow) onAddRxdList;
+  final List excelFileContent;
+  final Function(List) onAddExcelContent;
   DataLogger({
     Key? key,
     required this.isConnected,
@@ -23,6 +30,13 @@ class DataLogger extends StatefulWidget {
     required this.tempC,
     required this.tempD,
     required this.onDataLoggerStart,
+    required this.onRest,
+    required this.b_start_record,
+    required this.onStartRecordPressed,
+    required this.rxdList,
+    required this.excelFileContent,
+    required this.onAddExcelContent,
+    required this.onAddRxdList,
   }) : super(key: key);
 
   @override
@@ -32,16 +46,8 @@ class DataLogger extends StatefulWidget {
 class _DataLoggerState extends State<DataLogger> {
   final dataLoggerFile = DataLoggerStorage();
   final ScrollController dataLogScrollController = ScrollController();
-  List<TableRow> rxdList = [];
-
-  @override
-  void dispose() {
-    dataLogScrollController.dispose();
-    super.dispose();
-  }
 
   late Timer recordTimerEvent;
-  bool b_start_record = false;
   String? _tableTimer;
   int d_table_sino = 0;
   List<String> recordTimer = [
@@ -52,15 +58,12 @@ class _DataLoggerState extends State<DataLogger> {
     '1 Min',
     '5 Min',
   ];
-  List excelFileContent = [
-    [
-      'Si_No',
-      'Temp A',
-      'Temp B',
-      'Temp C',
-      'Temp D',
-    ],
-  ];
+
+  @override
+  void dispose() {
+    dataLogScrollController.dispose();
+    super.dispose();
+  }
 
   Widget _buildButton({
     required String buttonLabel,
@@ -88,16 +91,7 @@ class _DataLoggerState extends State<DataLogger> {
   void onResetData() {
     setState(() {
       d_table_sino = 0;
-      rxdList = [];
-      excelFileContent = [
-        [
-          'Si_No',
-          'Temp A',
-          'Temp B',
-          'Temp C',
-          'Temp D',
-        ]
-      ];
+      widget.onRest();
     });
   }
 
@@ -126,7 +120,7 @@ class _DataLoggerState extends State<DataLogger> {
                     style: BorderStyle.solid,
                     width: 2,
                   ),
-                  children: rxdList,
+                  children: widget.rxdList,
                 ),
               ],
             ),
@@ -141,19 +135,18 @@ class _DataLoggerState extends State<DataLogger> {
               height: SizeConfig.screen_height * 5,
               margin: EdgeInsets.only(left: SizeConfig.screen_width * 1),
               child: _buildButton(
-                buttonColor: b_start_record ? AppColors.red! : AppColors.green,
+                buttonColor:
+                    widget.b_start_record ? AppColors.red! : AppColors.green,
                 onPressed: widget.isMainOn
                     ? () {
-                        setState(() {
-                          b_start_record = !b_start_record;
-                        });
-                        if (b_start_record) _updateTimer(_tableTimer);
+                        widget.onStartRecordPressed();
+                        if (widget.b_start_record) _updateTimer(_tableTimer);
 
-                        widget.onDataLoggerStart(b_start_record);
+                        widget.onDataLoggerStart(widget.b_start_record);
                       }
                     : null,
                 buttonLabel:
-                    b_start_record ? 'Stop Data Log' : 'Start Data Log',
+                    widget.b_start_record ? 'Stop Data Log' : 'Start Data Log',
               ),
             ),
             Stack(
@@ -201,12 +194,12 @@ class _DataLoggerState extends State<DataLogger> {
                         buttonLabel: 'EXPORT',
                         buttonColor: AppColors.blue,
                         onPressed: () async {
-                          if (excelFileContent.length == 1) {
+                          if (widget.excelFileContent.length == 1) {
                             SnackbarService.showMessage(
                                 context, "Record is Empty");
                           } else {
                             String content = '';
-                            excelFileContent.forEach((element) {
+                            widget.excelFileContent.forEach((element) {
                               element.forEach((ele) {
                                 content += '${ele.toString()}\t';
                               });
@@ -229,7 +222,7 @@ class _DataLoggerState extends State<DataLogger> {
                     ],
                   ),
                 ),
-                if (b_start_record)
+                if (widget.b_start_record)
                   Container(
                     color: Colors.grey.shade200,
                   ),
@@ -297,7 +290,7 @@ class _DataLoggerState extends State<DataLogger> {
   addToRecord() {
     String rxtime = DateFormat('kk:mm:ss').format(DateTime.now());
     d_table_sino++;
-    rxdList.add(
+    widget.onAddRxdList(
       TableRow(
         children: [
           _tableChildRow(d_table_sino.toString()),
@@ -309,8 +302,7 @@ class _DataLoggerState extends State<DataLogger> {
         ],
       ),
     );
-
-    excelFileContent.add([
+    widget.onAddExcelContent([
       d_table_sino,
       rxtime,
       widget.tempA,
@@ -359,10 +351,10 @@ class _DataLoggerState extends State<DataLogger> {
   void timerRestart(int _timer) {
     recordTimerEvent = Timer.periodic(Duration(milliseconds: _timer), (t) {
       if (widget.isConnected) {
-        if (excelFileContent.length == 0) {
-          excelFileContent.add(tableHeader());
+        if (widget.excelFileContent.length == 0) {
+          widget.onAddExcelContent([tableHeader()]);
         }
-        if (b_start_record) {
+        if (widget.b_start_record) {
           addToRecord();
         }
       }

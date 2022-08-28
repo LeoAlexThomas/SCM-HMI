@@ -23,6 +23,13 @@ class RecordScreen extends StatefulWidget {
   final int gasFlow;
   final int centrifuge;
   final int sqzPresure;
+  final bool b_start_record;
+  final List<TableRow> rxdList;
+  final List excelFileContent;
+  final VoidCallback onStartRecordPressed;
+  final Function(TableRow newRxList) onAddRxdList;
+  final VoidCallback onRest;
+  final Function(List newExcelList) onAddExcel;
   RecordScreen({
     Key? key,
     required this.isConnected,
@@ -41,6 +48,13 @@ class RecordScreen extends StatefulWidget {
     required this.gasFlow,
     required this.centrifuge,
     required this.sqzPresure,
+    required this.b_start_record,
+    required this.onStartRecordPressed,
+    required this.rxdList,
+    required this.excelFileContent,
+    required this.onAddExcel,
+    required this.onAddRxdList,
+    required this.onRest,
   }) : super(key: key);
 
   @override
@@ -50,10 +64,8 @@ class RecordScreen extends StatefulWidget {
 class _RecordScreenState extends State<RecordScreen> {
   final recordFile = RecordStorage();
   final ScrollController recordScrollController = ScrollController();
-  List<TableRow> rxdList = [];
 
   late Timer recordTimerEvent;
-  bool b_start_record = false;
   String? _tableTimer;
   int d_table_sino = 0;
   List<String> recordTimer = [
@@ -65,20 +77,6 @@ class _RecordScreenState extends State<RecordScreen> {
     '1 Min',
     '5 Min',
     '10 Min'
-  ];
-  List excelFileContent = [
-    [
-      'Si_No',
-      'Time',
-      'Melt',
-      'Powder',
-      'Mould',
-      'Stirrer',
-      'Gas',
-      'Pour',
-      'Squeeze',
-      'Vaccum'
-    ],
   ];
 
   @override
@@ -113,21 +111,7 @@ class _RecordScreenState extends State<RecordScreen> {
   void onResetData() {
     setState(() {
       d_table_sino = 0;
-      rxdList = [];
-      excelFileContent = [
-        [
-          'Si_No',
-          'Time',
-          'Melt',
-          'Powder',
-          'Mould',
-          'Stirrer',
-          'Gas',
-          'Pour',
-          'Squeeze',
-          'Vaccum'
-        ]
-      ];
+      widget.onRest();
     });
   }
 
@@ -156,7 +140,7 @@ class _RecordScreenState extends State<RecordScreen> {
                     style: BorderStyle.solid,
                     width: 2,
                   ),
-                  children: rxdList,
+                  children: widget.rxdList,
                 ),
               ],
             ),
@@ -171,16 +155,16 @@ class _RecordScreenState extends State<RecordScreen> {
               height: SizeConfig.screen_height * 5,
               margin: EdgeInsets.only(left: SizeConfig.screen_width * 1),
               child: _buildButton(
-                buttonColor: b_start_record ? AppColors.red! : AppColors.green,
+                buttonColor:
+                    widget.b_start_record ? AppColors.red! : AppColors.green,
                 onPressed: widget.isMainOn
                     ? () {
-                        setState(() {
-                          b_start_record = !b_start_record;
-                        });
-                        if (b_start_record) _updateTimer(_tableTimer);
+                        widget.onStartRecordPressed();
+                        if (widget.b_start_record) _updateTimer(_tableTimer);
                       }
                     : null,
-                buttonLabel: b_start_record ? 'Stop Record' : 'Start Record',
+                buttonLabel:
+                    widget.b_start_record ? 'Stop Record' : 'Start Record',
               ),
             ),
             Stack(
@@ -215,7 +199,8 @@ class _RecordScreenState extends State<RecordScreen> {
                               );
                             }).toList(),
                             hint: Text('10 Sec'),
-                            onChanged: b_start_record ? null : _updateTimer,
+                            onChanged:
+                                widget.b_start_record ? null : _updateTimer,
                           ),
                         ),
                       ),
@@ -228,12 +213,12 @@ class _RecordScreenState extends State<RecordScreen> {
                         buttonLabel: 'EXPORT',
                         buttonColor: AppColors.blue,
                         onPressed: () async {
-                          if (excelFileContent.length == 1) {
+                          if (widget.excelFileContent.length == 1) {
                             SnackbarService.showMessage(
                                 context, "Record is Empty");
                           } else {
                             String content = '';
-                            excelFileContent.forEach((element) {
+                            widget.excelFileContent.forEach((element) {
                               element.forEach((ele) {
                                 content += '${ele.toString()}\t';
                               });
@@ -255,7 +240,7 @@ class _RecordScreenState extends State<RecordScreen> {
                     ],
                   ),
                 ),
-                if (b_start_record)
+                if (widget.b_start_record)
                   Container(
                     color: Colors.grey.shade200,
                   ),
@@ -332,7 +317,7 @@ class _RecordScreenState extends State<RecordScreen> {
     String rxtime = DateFormat('kk:mm:ss').format(DateTime.now());
     if (widget.isDebug) {
       d_table_sino++;
-      rxdList.add(
+      widget.onAddRxdList(
         TableRow(
           children: [
             _tableChildRow(d_table_sino.toString()),
@@ -352,8 +337,7 @@ class _RecordScreenState extends State<RecordScreen> {
           ],
         ),
       );
-
-      excelFileContent.add([
+      widget.onAddExcel([
         d_table_sino,
         rxtime,
         widget.melt,
@@ -411,10 +395,10 @@ class _RecordScreenState extends State<RecordScreen> {
   void timerRestart(int _timer) {
     recordTimerEvent = Timer.periodic(Duration(milliseconds: _timer), (t) {
       if (widget.isConnected) {
-        if (excelFileContent.length == 0) {
-          excelFileContent.add(tableHeader());
+        if (widget.excelFileContent.length == 0) {
+          widget.onAddExcel([tableHeader()]);
         }
-        if (b_start_record) {
+        if (widget.b_start_record) {
           addToRecord();
         }
       }
