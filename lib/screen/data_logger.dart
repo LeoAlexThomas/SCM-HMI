@@ -13,7 +13,6 @@ class DataLogger extends StatefulWidget {
   final int tempB;
   final int tempC;
   final int tempD;
-  final Function(bool) onDataLoggerStart;
   final VoidCallback onRest;
   final bool b_start_record;
   final VoidCallback onStartRecordPressed;
@@ -21,6 +20,7 @@ class DataLogger extends StatefulWidget {
   final Function(TableRow) onAddRxdList;
   final List excelFileContent;
   final Function(List) onAddExcelContent;
+  final VoidCallback onExport;
   DataLogger({
     Key? key,
     required this.isConnected,
@@ -29,7 +29,6 @@ class DataLogger extends StatefulWidget {
     required this.tempB,
     required this.tempC,
     required this.tempD,
-    required this.onDataLoggerStart,
     required this.onRest,
     required this.b_start_record,
     required this.onStartRecordPressed,
@@ -37,6 +36,7 @@ class DataLogger extends StatefulWidget {
     required this.excelFileContent,
     required this.onAddExcelContent,
     required this.onAddRxdList,
+    required this.onExport,
   }) : super(key: key);
 
   @override
@@ -91,7 +91,25 @@ class _DataLoggerState extends State<DataLogger> {
   void onResetData() {
     setState(() {
       d_table_sino = 0;
-      widget.onRest();
+      setState(() {
+        widget.onRest();
+        print(widget.rxdList);
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    recordTimerEvent = Timer.periodic(Duration(milliseconds: 10000), (t) {
+      if (widget.isConnected) {
+        if (widget.excelFileContent.length == 0) {
+          widget.onAddExcelContent([tableHeader()]);
+        }
+        if (widget.b_start_record) {
+          addToRecord();
+        }
+      }
     });
   }
 
@@ -141,8 +159,6 @@ class _DataLoggerState extends State<DataLogger> {
                     ? () {
                         widget.onStartRecordPressed();
                         if (widget.b_start_record) _updateTimer(_tableTimer);
-
-                        widget.onDataLoggerStart(widget.b_start_record);
                       }
                     : null,
                 buttonLabel:
@@ -193,30 +209,11 @@ class _DataLoggerState extends State<DataLogger> {
                       _buildButton(
                         buttonLabel: 'EXPORT',
                         buttonColor: AppColors.blue,
-                        onPressed: () async {
-                          if (widget.excelFileContent.length == 1) {
-                            SnackbarService.showMessage(
-                                context, "Record is Empty");
-                          } else {
-                            String content = '';
-                            widget.excelFileContent.forEach((element) {
-                              element.forEach((ele) {
-                                content += '${ele.toString()}\t';
-                              });
-                              content += '\n';
-                              dataLoggerFile
-                                  .exportFile(content)
-                                  .then((exportedFilePath) {
-                                onResetData();
-                                SnackbarService.showMessage(
-                                  context,
-                                  exportedFilePath == null
-                                      ? "Data Logger File exported"
-                                      : "Data Logger file exported here: $exportedFilePath",
-                                );
-                              });
-                            });
-                          }
+                        onPressed: () {
+                          setState(() {
+                            d_table_sino = 0;
+                          });
+                          widget.onExport();
                         },
                       ),
                     ],
@@ -240,27 +237,27 @@ class _DataLoggerState extends State<DataLogger> {
       _tableTimer = value;
       switch (_tableTimer) {
         case '1 Sec':
-          recordTimerEvent.cancel();
+          if (recordTimerEvent.isActive) recordTimerEvent.cancel();
           timerRestart(1000);
           break;
         case '5 Sec':
-          recordTimerEvent.cancel();
+          if (recordTimerEvent.isActive) recordTimerEvent.cancel();
           timerRestart(5000);
           break;
         case '10 Sec':
-          recordTimerEvent.cancel();
+          if (recordTimerEvent.isActive) recordTimerEvent.cancel();
           timerRestart(10000);
           break;
         case '30 Sec':
-          recordTimerEvent.cancel();
+          if (recordTimerEvent.isActive) recordTimerEvent.cancel();
           timerRestart(30000);
           break;
         case '1 Min':
-          recordTimerEvent.cancel();
+          if (recordTimerEvent.isActive) recordTimerEvent.cancel();
           timerRestart(100000);
           break;
         case '5 Min':
-          recordTimerEvent.cancel();
+          if (recordTimerEvent.isActive) recordTimerEvent.cancel();
           timerRestart(500000);
           break;
         default:

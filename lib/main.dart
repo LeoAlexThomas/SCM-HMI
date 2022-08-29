@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:StirCastingMachine/data/data.dart';
@@ -180,10 +179,10 @@ class _MainAppSampleState extends State<MainAppSample> {
       d_pv_powder = 30,
       d_pv_mould = 30,
       d_pv_runway = 30,
-      d_pv_data_logger_temp_a = 30,
-      d_pv_data_logger_temp_b = 30,
-      d_pv_data_logger_temp_c = 30,
-      d_pv_data_logger_temp_d = 30,
+      d_pv_data_logger_temp_a = 0,
+      d_pv_data_logger_temp_b = 0,
+      d_pv_data_logger_temp_c = 0,
+      d_pv_data_logger_temp_d = 0,
       d_pv_stirrer = 0,
       d_pv_lift_pos = 0,
       d_pv_UV_lift_pos = 0;
@@ -2021,16 +2020,11 @@ class _MainAppSampleState extends State<MainAppSample> {
           tempB: d_pv_data_logger_temp_b,
           tempC: d_pv_data_logger_temp_c,
           tempD: d_pv_data_logger_temp_d,
-          onDataLoggerStart: (dataStartedValue) {
-            setState(() {
-              b_btn_Data_Logger = dataStartedValue;
-            });
-          },
           b_start_record: b_data_logger_start_record,
           onRest: () {
             setState(() {
-              rxdList = [];
-              excelFileContent = [
+              rxdDataLoggerList = [];
+              dataloggerExcelContent = [
                 [
                   'Si_No',
                   'Temp A',
@@ -2043,7 +2037,8 @@ class _MainAppSampleState extends State<MainAppSample> {
           },
           onStartRecordPressed: () {
             setState(() {
-              b_start_record = !b_start_record;
+              b_data_logger_start_record = !b_data_logger_start_record;
+              b_btn_Data_Logger = b_data_logger_start_record;
             });
           },
           rxdList: rxdDataLoggerList,
@@ -2057,6 +2052,40 @@ class _MainAppSampleState extends State<MainAppSample> {
             setState(() {
               rxdDataLoggerList.add(newRow);
             });
+          },
+          onExport: () async {
+            final dataLoggerFile = DataLoggerStorage();
+            if (dataloggerExcelContent.length == 1) {
+              SnackbarService.showMessage(context, "Record is Empty");
+            } else {
+              String content = '';
+              dataloggerExcelContent.forEach((element) {
+                element.forEach((ele) {
+                  content += '${ele.toString()}\t';
+                });
+                content += '\n';
+                dataLoggerFile.exportFile(content).then((exportedFilePath) {
+                  setState(() {
+                    rxdDataLoggerList = [];
+                    dataloggerExcelContent = [
+                      [
+                        'Si_No',
+                        'Temp A',
+                        'Temp B',
+                        'Temp C',
+                        'Temp D',
+                      ]
+                    ];
+                  });
+                  SnackbarService.showMessage(
+                    context,
+                    exportedFilePath == null
+                        ? "Data Logger File exported"
+                        : "Data Logger file exported here: $exportedFilePath",
+                  );
+                });
+              });
+            }
           },
         );
       }
@@ -2856,28 +2885,41 @@ class _MainAppSampleState extends State<MainAppSample> {
               }
               // For Data Logger
               if (b_data_logger_available) {
-                d_pv_data_logger_temp_a = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(27).toString().padLeft(2, '0') +
-                        text.codeUnitAt(28).toString().padLeft(2, '0')),
-                    d_pv_data_logger_temp_a);
-                d_pv_data_logger_temp_b = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(29).toString().padLeft(2, '0') +
-                        text.codeUnitAt(30).toString().padLeft(2, '0')),
-                    d_pv_data_logger_temp_b);
-                d_pv_data_logger_temp_c = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(31).toString().padLeft(2, '0') +
-                        text.codeUnitAt(32).toString().padLeft(2, '0')),
-                    d_pv_data_logger_temp_c);
-                d_pv_data_logger_temp_d = d_Validate_DataLog_Temp(
-                    int.parse(text.codeUnitAt(33).toString().padLeft(2, '0') +
-                        text.codeUnitAt(34).toString().padLeft(2, '0')),
-                    d_pv_data_logger_temp_d);
-              } else {
-                d_pv_data_logger_temp_a = 30;
-                d_pv_data_logger_temp_b = 30;
-                d_pv_data_logger_temp_c = 30;
-                d_pv_data_logger_temp_d = 30;
+                d_pv_data_logger_temp_a = int.parse(
+                    text.codeUnitAt(31).toString().padLeft(2, '0') +
+                        text.codeUnitAt(32).toString().padLeft(2, '0'));
+                d_pv_data_logger_temp_b = int.parse(
+                    text.codeUnitAt(33).toString().padLeft(2, '0') +
+                        text.codeUnitAt(34).toString().padLeft(2, '0'));
+                d_pv_data_logger_temp_c = int.parse(
+                    text.codeUnitAt(35).toString().padLeft(2, '0') +
+                        text.codeUnitAt(36).toString().padLeft(2, '0'));
+                d_pv_data_logger_temp_d = int.parse(
+                    text.codeUnitAt(37).toString().padLeft(2, '0') +
+                        text.codeUnitAt(38).toString().padLeft(2, '0'));
+                // d_pv_data_logger_temp_a = d_Validate_DataLog_Temp(
+                //     int.parse(text.codeUnitAt(31).toString().padLeft(2, '0') +
+                //         text.codeUnitAt(32).toString().padLeft(2, '0')),
+                //     d_pv_data_logger_temp_a);
+                // d_pv_data_logger_temp_b = d_Validate_DataLog_Temp(
+                //     int.parse(text.codeUnitAt(33).toString().padLeft(2, '0') +
+                //         text.codeUnitAt(34).toString().padLeft(2, '0')),
+                //     d_pv_data_logger_temp_b);
+                // d_pv_data_logger_temp_c = d_Validate_DataLog_Temp(
+                //     int.parse(text.codeUnitAt(35).toString().padLeft(2, '0') +
+                //         text.codeUnitAt(36).toString().padLeft(2, '0')),
+                //     d_pv_data_logger_temp_c);
+                // d_pv_data_logger_temp_d = d_Validate_DataLog_Temp(
+                //     int.parse(text.codeUnitAt(37).toString().padLeft(2, '0') +
+                //         text.codeUnitAt(38).toString().padLeft(2, '0')),
+                //     d_pv_data_logger_temp_d);
               }
+              //  else {
+              //   d_pv_data_logger_temp_a = 30;
+              //   d_pv_data_logger_temp_b = 30;
+              //   d_pv_data_logger_temp_c = 30;
+              //   d_pv_data_logger_temp_d = 30;
+              // }
               // validaterxData(text);
               // bDataReceived = true;
             },
@@ -3084,7 +3126,6 @@ class _MainAppSampleState extends State<MainAppSample> {
           b_ringtone = false;
         } else {
           dDataReceivedIndex++;
-          print("Datareceived index: $dDataReceivedIndex");
           if (dDataReceivedIndex >= 10) {
             btns['btnMain']!['btnState'] = 'DisConnected';
             dDataReceivedIndex = 0;
