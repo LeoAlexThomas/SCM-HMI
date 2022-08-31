@@ -93,7 +93,6 @@ class _DataLoggerState extends State<DataLogger> {
       d_table_sino = 0;
       setState(() {
         widget.onRest();
-        print(widget.rxdList);
       });
     });
   }
@@ -197,7 +196,8 @@ class _DataLoggerState extends State<DataLogger> {
                               );
                             }).toList(),
                             hint: Text('10 Sec'),
-                            onChanged: _updateTimer,
+                            onChanged:
+                                widget.b_start_record ? null : _updateTimer,
                           ),
                         ),
                       ),
@@ -209,12 +209,7 @@ class _DataLoggerState extends State<DataLogger> {
                       _buildButton(
                         buttonLabel: 'EXPORT',
                         buttonColor: AppColors.blue,
-                        onPressed: () {
-                          setState(() {
-                            d_table_sino = 0;
-                          });
-                          widget.onExport();
-                        },
+                        onPressed: widget.onExport,
                       ),
                     ],
                   ),
