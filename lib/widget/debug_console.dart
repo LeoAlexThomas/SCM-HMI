@@ -5,17 +5,22 @@ import 'package:flutter/material.dart';
 class DebugConsole extends StatelessWidget {
   final List<Widget> rxDebugList;
   final List<Widget> txDebugList;
+  final ScrollController rxScrollController;
+  final ScrollController txScrollController;
+
   DebugConsole({
     Key? key,
     required this.rxDebugList,
     required this.txDebugList,
+    required this.rxScrollController,
+    required this.txScrollController,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: SizeConfig.screen_width * 78,
-      height: SizeConfig.screen_height * 25,
+      // height: SizeConfig.screen_height * 25,
       child: Column(
         children: [
           Padding(
@@ -64,17 +69,20 @@ class DebugConsole extends StatelessWidget {
                           fontSize: SizeConfig.font_height * 2.65, //20
                         ),
                       ),
-                      SingleChildScrollView(
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            top: SizeConfig.screen_height * 1,
-                            bottom: SizeConfig.screen_height * 1,
-                            left: SizeConfig.screen_width * 1,
-                            right: SizeConfig.screen_width * 1,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: rxDebugList,
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: rxScrollController,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              top: SizeConfig.screen_height * 1,
+                              bottom: SizeConfig.screen_height * 1,
+                              left: SizeConfig.screen_width * 1,
+                              right: SizeConfig.screen_width * 1,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: rxDebugList,
+                            ),
                           ),
                         ),
                       ),
@@ -111,17 +119,20 @@ class DebugConsole extends StatelessWidget {
                           fontSize: SizeConfig.font_height * 2.65, //20
                         ),
                       ),
-                      SingleChildScrollView(
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            top: SizeConfig.screen_height * 1,
-                            bottom: SizeConfig.screen_height * 1,
-                            left: SizeConfig.screen_width * 1,
-                            right: SizeConfig.screen_width * 1,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: txDebugList,
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: txScrollController,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              top: SizeConfig.screen_height * 1,
+                              bottom: SizeConfig.screen_height * 1,
+                              left: SizeConfig.screen_width * 1,
+                              right: SizeConfig.screen_width * 1,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: txDebugList,
+                            ),
                           ),
                         ),
                       ),
