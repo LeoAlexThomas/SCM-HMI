@@ -101,7 +101,7 @@ class _MainAppSampleState extends State<MainAppSample> {
   // Debug scrollController
   final ScrollController rxDebugScrollController = ScrollController();
   final ScrollController txDebugScrollController = ScrollController();
-  String warningText = "No Worry!";
+  String warningText = "";
 
   bool b_admin_login = false;
 // btn State for sending
@@ -1274,7 +1274,10 @@ class _MainAppSampleState extends State<MainAppSample> {
                           height: SizeConfig.screen_height * 5,
                           alignment: Alignment.center,
                           child: MarqueeText(
-                            text: TextSpan(text: warningText),
+                            text: TextSpan(
+                                text: warningText.isEmpty
+                                    ? "No Worry!"
+                                    : "Check: " + warningText),
                             speed: 10,
                             alwaysScroll: true,
                           ),
@@ -3139,10 +3142,29 @@ class _MainAppSampleState extends State<MainAppSample> {
     });
   }
 
+  bool getIsWarningShow(String text) {
+    return warningText.split(',').any((element) => element == text);
+  }
+
+  void updateWarningText(String action, String text) {
+    List data = warningText.split(',');
+    if (action == "add") {
+      data.add(text);
+    } else if (action == "remove") {
+      data.remove(text);
+    }
+    if (data.isNotEmpty && data[0] == "") {
+      warningText = data[1];
+    } else {
+      warningText = data.join(',');
+    }
+    setState(() {});
+  }
+
   masterTimer_Event() {
     try {
       setState(() {
-        appConfigTextAssign();
+        // appConfigTextAssign();
         if (bDataReceived) {
           btns['btnMain']!['btnState'] = 'Connected';
           dDataReceivedIndex = 0;
@@ -3227,9 +3249,7 @@ class _MainAppSampleState extends State<MainAppSample> {
         //       d_sv_lift_pos = 1;
         //       d_lift_jog_idx=0;
         //   }
-
         //   // print('autojog start');
-
         //   else {
         //     if (b_stirrer_down) {
         //       d_sv_lift_pos = 0;
@@ -3240,36 +3260,25 @@ class _MainAppSampleState extends State<MainAppSample> {
         //   }
         // }
         //For Furnace
-        if (d_pv_furnace == 0 || d_pv_melt == 0) {
-          if (d_pv_furnace == 0) {
-            if (warningText.contains("No Worry!")) {
-              warningText = "Check Furnace Temp. Sensor!";
-            } else {
-              if (!warningText.contains("Check Furnace Temp. Sensor!")) {
-                warningText += " Check Furnace Temp. Sensor!";
-              }
-            }
-          } else {
-            if (warningText.contains("Check Furnace Temp. Sensor!")) {
-              warningText.replaceAll("Check Furnace Temp. Sensor!", "");
-            }
+        // if (d_pv_furnace == 0 || d_pv_melt == 0) {
+        if (d_pv_furnace == 0) {
+          if (!getIsWarningShow("Furnace TC!")) {
+            updateWarningText("add", "Furnace TC!");
           }
-
-          if (d_pv_melt == 0) {
-            if (warningText.contains("No Worry!")) {
-              warningText = "Check Melt Temp. Sensor!";
-            } else {
-              if (!warningText.contains("Check Melt Temp. Sensor!")) {
-                warningText += " Check Melt Temp. Sensor!";
-              }
-            }
-          } else {
-            if (warningText.contains("Check Melt Temp. Sensor!")) ;
-            {
-              warningText.replaceAll("Check Melt Temp. Sensor!", "");
-            }
+        } else {
+          if (getIsWarningShow("Furnace TC!")) {
+            updateWarningText("remove", "Furnace TC!");
           }
         }
+
+        if (d_pv_melt == 0) {
+          if (!getIsWarningShow("Melt TC!")) {
+            updateWarningText("add", "Melt TC!");
+          }
+        } else if (getIsWarningShow("Melt TC!")) {
+          updateWarningText("remove", "Melt TC!");
+        }
+        // }
         if (b_btn_Furance) {
           if (d_pv_furnace == 0 || d_pv_melt == 0) {
             bFurnaceHeatOUT = false;
@@ -3295,16 +3304,12 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         //For Powder
         if (d_pv_powder == 0) {
-          if (warningText.contains("No Worry!")) {
-            warningText = "Check Powder Temp. Sensor!";
-          } else {
-            if (!warningText.contains("Check Powder Temp. Sensor!")) {
-              warningText += " Check Powder Temp. Sensor!";
-            }
+          if (!getIsWarningShow("Powder TC!")) {
+            updateWarningText("add", "Powder TC!");
           }
         } else {
-          if (warningText.contains("Check Powder Temp. Sensor!")) {
-            warningText.replaceAll("Check Powder Temp. Sensor!", "");
+          if (getIsWarningShow("Powder TC!")) {
+            updateWarningText("remove", "Powder TC!");
           }
         }
         if (b_btn_Powder) {
@@ -3331,16 +3336,12 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         //For Mould
         if (d_pv_mould == 0) {
-          if (warningText.contains("No Worry!")) {
-            warningText = "Check Mould Temp. Sensor!";
-          } else {
-            if (!warningText.contains("Check Mould Temp. Sensor!")) {
-              warningText += " Check Mould Temp. Sensor!";
-            }
+          if (!getIsWarningShow("Mould TC!")) {
+            updateWarningText("add", "Mould TC!");
           }
         } else {
-          if (warningText.contains("Check Mould Temp. Sensor!")) {
-            warningText.replaceAll("Check Mould Temp. Sensor!", "");
+          if (getIsWarningShow("Mould TC!")) {
+            updateWarningText("remove", "Mould TC!");
           }
         }
         if (b_btn_Mould) {
@@ -3367,16 +3368,12 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         //For Runway
         if (d_pv_runway == 0) {
-          if (warningText.contains("No Worry!")) {
-            warningText = "Check Runway Temp. Sensor!";
-          } else {
-            if (!warningText.contains("Check Runway Temp. Sensor!")) {
-              warningText += " Check Runway Temp. Sensor!";
-            }
+          if (!getIsWarningShow("Runway TC!")) {
+            updateWarningText("add", "Runway TC!");
           }
         } else {
-          if (warningText.contains("Check Runway Temp. Sensor!")) {
-            warningText.replaceAll("Check Runway Temp. Sensor!", "");
+          if (getIsWarningShow("Runway TC!")) {
+            updateWarningText("remove", "Runway TC!");
           }
         }
         if (b_btn_Runway) {
@@ -3464,7 +3461,6 @@ class _MainAppSampleState extends State<MainAppSample> {
             d_cen_start_idx++;
         } else
           d_centrifuge_out = 1;
-        if (warningText.isEmpty) warningText = "No worry!";
       });
     } catch (e) {
       if (!errMsgMasterTimer) {
