@@ -1526,8 +1526,9 @@ class _MainAppSampleState extends State<MainAppSample> {
                               if (!b_btn_Centrifugal) {
                                 b_btn_Centrifugal = btnState('centrifuge',
                                     btns['btnCentrifuge'], b_btn_Centrifugal);
-                                d_centrifuge_out =
-                                    d_centrifuge_out ?? 0 + d_cen_min_val;
+                                // d_centrifuge_out =
+                                //     d_centrifuge_out ?? 0 + d_cen_min_val;
+                                d_centrifuge_out = d_cen_min_val;
                               } else {
                                 d_pv_centrifuge = 0;
                                 b_btn_Centrifugal = btnState('centrifuge',
