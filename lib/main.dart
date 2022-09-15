@@ -2989,7 +2989,7 @@ class _MainAppSampleState extends State<MainAppSample> {
       if (b_btn_Centrifugal) R1 += 2;
 
       // Hydraulic Pump
-      if (b_btn_Sqz_Pump) T4 += 4;
+      if (b_btn_Sqz_Pump) T3 += 4;
 
       //Data Logger Attachment
       if (b_data_logger_available) //check if attachment is enabled
@@ -2997,7 +2997,7 @@ class _MainAppSampleState extends State<MainAppSample> {
         T4 = T4 + 8; // Command
 
       // Vacuum Pump  (or) vacuum solinoid
-      if (b_btn_Vacuum_Pump) T3 += 4;
+      if (b_btn_Vacuum_Pump) T3 += 2;
 
       if (d_pv_furnace > 650) {
         // Bottom Pouring Opne Close
@@ -3038,11 +3038,11 @@ class _MainAppSampleState extends State<MainAppSample> {
       // if d_sv_UV_lift_pos=1 --> DOWN
       //if d_sv_UV_lift_pos=2 --> UP
       if (d_sv_UV_lift_pos == 1) //Down
-        T4 += 2;
+        T4 += 4;
       else if (d_sv_UV_lift_pos == 2) //Up
-        T4 += 1;
-      if (b_btn_EM_Vibrator) T3 += 8;
-      if (b_btn_PowderEMV) R1 += 1;
+        T4 += 2;
+      if (b_btn_EM_Vibrator) T4 += 1;
+      if (b_btn_PowderEMV) T3 += 8;
     }
 
     // converting current values to ascii and sending to terminal
