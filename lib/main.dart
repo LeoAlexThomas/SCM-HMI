@@ -98,7 +98,10 @@ class _MainAppSampleState extends State<MainAppSample> {
     ],
   ];
 
-  String warningText = "No Worry!";
+  // Debug scrollController
+  final ScrollController rxDebugScrollController = ScrollController();
+  final ScrollController txDebugScrollController = ScrollController();
+  String warningText = "";
 
   bool b_admin_login = false;
 // btn State for sending
@@ -334,6 +337,8 @@ class _MainAppSampleState extends State<MainAppSample> {
     connection?.close();
     connection?.dispose();
     connection = null;
+    rxDebugScrollController.dispose();
+    txDebugScrollController.dispose();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -966,7 +971,8 @@ class _MainAppSampleState extends State<MainAppSample> {
                                 b_btn_Auto_Jog = btnState('autojog',
                                     btns['btnAutojog'], b_btn_Auto_Jog);
                                 if (b_btn_Auto_Jog) {
-                                  autojogStartFn();
+                                  b_auto_jog_timer = true;
+                                  // autojogStartFn();
                                 } else {
                                   b_auto_jog_timer = false;
                                 }
@@ -1268,7 +1274,10 @@ class _MainAppSampleState extends State<MainAppSample> {
                           height: SizeConfig.screen_height * 5,
                           alignment: Alignment.center,
                           child: MarqueeText(
-                            text: TextSpan(text: warningText),
+                            text: TextSpan(
+                                text: warningText.isEmpty
+                                    ? "No Worry!"
+                                    : "Check: " + warningText),
                             speed: 10,
                             alwaysScroll: true,
                           ),
@@ -1303,8 +1312,6 @@ class _MainAppSampleState extends State<MainAppSample> {
       if (b_stirrer_down) {
         b_auto_jog_timer = true;
         timer.cancel();
-      } else {
-        d_sv_lift_pos = 1;
       }
     });
   }
@@ -1519,8 +1526,9 @@ class _MainAppSampleState extends State<MainAppSample> {
                               if (!b_btn_Centrifugal) {
                                 b_btn_Centrifugal = btnState('centrifuge',
                                     btns['btnCentrifuge'], b_btn_Centrifugal);
-                                d_centrifuge_out =
-                                    d_centrifuge_out ?? 0 + d_cen_min_val;
+                                // d_centrifuge_out =
+                                //     d_centrifuge_out ?? 0 + d_cen_min_val;
+                                d_centrifuge_out = d_cen_min_val;
                               } else {
                                 d_pv_centrifuge = 0;
                                 b_btn_Centrifugal = btnState('centrifuge',
@@ -1795,11 +1803,15 @@ class _MainAppSampleState extends State<MainAppSample> {
   txDataDebug(String txd) {
     String txtime = DateFormat('kk:mm:ss').format(DateTime.now());
     txDebugList.add(new Text('$txtime >>> $txd'));
+    txDebugScrollController
+        .jumpTo(txDebugScrollController.position.maxScrollExtent);
   }
 
   rxDataDebug(String rxd) {
     String rxtime = DateFormat('kk:mm:ss').format(DateTime.now());
     rxDebugList.add(new Text('$rxtime >>> $rxd'));
+    rxDebugScrollController
+        .jumpTo(rxDebugScrollController.position.maxScrollExtent);
   }
 
   bool warrantyStatus(String validDate) {
@@ -1827,7 +1839,12 @@ class _MainAppSampleState extends State<MainAppSample> {
         return optionalAttachments();
       } else if (selectedIndex == 3) {
         return debugging == 'Y'
-            ? DebugConsole(rxDebugList: rxDebugList, txDebugList: txDebugList)
+            ? DebugConsole(
+                rxDebugList: rxDebugList,
+                txDebugList: txDebugList,
+                rxScrollController: rxDebugScrollController,
+                txScrollController: txDebugScrollController,
+              )
             : RecordScreen(
                 isConnected: btns['btnMain']!['btnState'] == 'Connected',
                 isMainOn: b_btn_Mains,
@@ -2065,18 +2082,18 @@ class _MainAppSampleState extends State<MainAppSample> {
                 });
                 content += '\n';
                 dataLoggerFile.exportFile(content).then((exportedFilePath) {
-                  setState(() {
-                    rxdDataLoggerList = [];
-                    dataloggerExcelContent = [
-                      [
-                        'Si_No',
-                        'Temp A',
-                        'Temp B',
-                        'Temp C',
-                        'Temp D',
-                      ]
-                    ];
-                  });
+                  // setState(() {
+                  //   rxdDataLoggerList = [];
+                  //   dataloggerExcelContent = [
+                  //     [
+                  //       'Si_No',
+                  //       'Temp A',
+                  //       'Temp B',
+                  //       'Temp C',
+                  //       'Temp D',
+                  //     ]
+                  //   ];
+                  // });
                   SnackbarService.showMessage(
                     context,
                     exportedFilePath == null
@@ -2495,7 +2512,8 @@ class _MainAppSampleState extends State<MainAppSample> {
       try {
         if (connection != null) {
           connection?.input?.listen((Uint8List data) async {
-            displayText(data);
+            receiver(data);
+            // displayText(data);
           }).onDone(() {
             connection?.finish();
           });
@@ -2559,7 +2577,8 @@ class _MainAppSampleState extends State<MainAppSample> {
       try {
         if (connection != null) {
           connection?.input!.listen((Uint8List data) async {
-            displayText(data);
+            receiver(data);
+            // displayText(data);
           }).onDone(() {
             // Bluetooth disconnected
             connection?.finish();
@@ -2658,8 +2677,8 @@ class _MainAppSampleState extends State<MainAppSample> {
     try {
       socket.listen((event) {
         Timer(Duration(milliseconds: 500), () {
-          // receiver(event);
-          displayText(event);
+          receiver(event);
+          // displayText(event);
         });
       });
     } catch (e) {
@@ -2673,79 +2692,95 @@ class _MainAppSampleState extends State<MainAppSample> {
   }
 
 //Datalogger validation for peak values > 1200
-  int d_Validate_DataLog_Temp(int dNewValue, int dOldValue) {
-    int dReturnValue = 0;
-    if (dNewValue < 1000)
-      dReturnValue = dNewValue;
-    else if ((dNewValue >= 1000) && (dNewValue < 1200))
-      dReturnValue = 0;
-    else
-      dReturnValue = dOldValue;
-    return dReturnValue;
-  }
-
-  // void receiver(Uint8List event) {
-  //   try {
-  //     String s = String.fromCharCodes(event);
-  //     log("Data: ${s.indexOf("e")}");
-  //     if ((s.substring(0, 4) == "ccc@") &&
-  //         (b_data_logger_available
-  //             ? s.substring(44, 47) == "eee"
-  //             : s.substring(35, 38) == "eee")) {
-  //       displayText(s);
-  //       return;
-  //     }
-  //     if (s.contains('@')) {
-  //       var startIdx = s.indexOf("@");
-  //       if (!s.endsWith('@')) {
-  //         for (int i = startIdx + 1; i < s.length; i++) {
-  //           sRxDataStart = sRxDataStart + s[i];
-  //         }
-  //       }
-  //       s = '';
-  //       bDataStart = true;
-  //       bDataStop = false;
-  //     }
-  //     if (s.contains('e')) {
-  //       var endIdx = s.indexOf("e");
-  //       if (!s.startsWith('e')) {
-  //         for (int i = endIdx - 1; i >= 0; i--) {
-  //           sRxDataEnd = sRxDataEnd + s[i];
-  //         }
-  //         sRxDataEnd = sRxDataEnd.split('').reversed.join();
-  //       }
-  //       s = '';
-  //       bDataStop = true;
-  //     }
-  //     if (bDataStart) {
-  //       if (!bDataStop) {
-  //         sRxDataMiddle = sRxDataMiddle + s;
-  //         s = '';
-  //       } else {
-  //         sRxData = sRxDataStart + sRxDataMiddle + sRxDataEnd;
-  //         displayText(sRxData);
-  //         bDataStop = false;
-  //         bDataStart = false;
-  //         s = '';
-  //         sRxData = '';
-  //         sRxDataStart = '';
-  //         sRxDataMiddle = '';
-  //         sRxDataEnd = '';
-  //       }
-  //     }
-  //   } catch (e) {
-  //     if (!errMsgReceiveMsg) {
-  //       logFile.writeLogfile('Exception in receiver: $e');
-  //       setState(() {
-  //         errMsgReceiveMsg = true;
-  //       });
-  //     }
-  //   }
+  // int d_Validate_DataLog_Temp(int dNewValue, int dOldValue) {
+  //   int dReturnValue = 0;
+  //   if (dNewValue < 1000)
+  //     dReturnValue = dNewValue;
+  //   else if ((dNewValue >= 1000) && (dNewValue < 1200))
+  //     dReturnValue = 0;
+  //   else
+  //     dReturnValue = dOldValue;
+  //   return dNewValue;
   // }
 
-  Future<void> displayText(Uint8List data) async {
+  String oldValue = "";
+
+  void receiver(Uint8List event) {
     try {
-      String text = String.fromCharCodes(data);
+      String s = String.fromCharCodes(event);
+      // log("Data: $s");
+      if (s.contains("ccc@")) {
+        if (s.contains("eee")) {
+          // log("FULL DATA: $s");
+        } else {
+          oldValue = s;
+        }
+      } else if (s.contains("eee")) {
+        s = oldValue + s;
+        oldValue = "";
+        // log("Data merge: $s");
+
+      }
+      displayText(s);
+      return;
+      // if ((s.substring(0, 4) == "ccc@") &&
+      //     (b_data_logger_available
+      //         ? s.substring(44, 47) == "eee"
+      //         : s.substring(35, 38) == "eee")) {
+      //   displayText(s);
+      //   return;
+      // }
+      // if (s.contains('@')) {
+      //   var startIdx = s.indexOf("@");
+      //   if (!s.endsWith('@')) {
+      //     for (int i = startIdx + 1; i < s.length; i++) {
+      //       sRxDataStart = sRxDataStart + s[i];
+      //     }
+      //   }
+      //   s = '';
+      //   bDataStart = true;
+      //   bDataStop = false;
+      // }
+      // if (s.contains('e')) {
+      //   var endIdx = s.indexOf("e");
+      //   if (!s.startsWith('e')) {
+      //     for (int i = endIdx - 1; i >= 0; i--) {
+      //       sRxDataEnd = sRxDataEnd + s[i];
+      //     }
+      //     sRxDataEnd = sRxDataEnd.split('').reversed.join();
+      //   }
+      //   s = '';
+      //   bDataStop = true;
+      // }
+      // if (bDataStart) {
+      //   if (!bDataStop) {
+      //     sRxDataMiddle = sRxDataMiddle + s;
+      //     s = '';
+      //   } else {
+      //     sRxData = sRxDataStart + sRxDataMiddle + sRxDataEnd;
+      //     displayText(sRxData);
+      //     bDataStop = false;
+      //     bDataStart = false;
+      //     s = '';
+      //     sRxData = '';
+      //     sRxDataStart = '';
+      //     sRxDataMiddle = '';
+      //     sRxDataEnd = '';
+      //   }
+      // }
+    } catch (e) {
+      if (!errMsgReceiveMsg) {
+        logFile.writeLogfile('Exception in receiver: $e');
+        setState(() {
+          errMsgReceiveMsg = true;
+        });
+      }
+    }
+  }
+
+  Future<void> displayText(String text) async {
+    try {
+      // String text = String.fromCharCodes(data);
       if (text.contains("@")) {
         if (!text.isEmpty) {
           bDataReceived = true;
@@ -2758,8 +2793,9 @@ class _MainAppSampleState extends State<MainAppSample> {
 
           if (debugging == 'Y') {
             rxDataDebug(text);
+            return;
           }
-          // log("${text.codeUnitAt(0)}${text.codeUnitAt(1)} - ${text.codeUnitAt(2)}${text.codeUnitAt(3)} - ${text.codeUnitAt(4)}${text.codeUnitAt(5)} - ${text.codeUnitAt(6)}${text.codeUnitAt(7)} - ${text.codeUnitAt(8)}${text.codeUnitAt(9)} - ${text.codeUnitAt(10)}${text.codeUnitAt(11)} - ");
+          // log("${text.codeUnitAt(0)}${text.codeUnitAt(1)} - ${text.codeUnitAt(2)}${text.codeUnitAt(3)} - ${text.codeUnitAt(4)}${text.codeUnitAt(5)} - ${text.codeUnitAt(6)}${text.codeUnitAt(7)} - ${text.codeUnitAt(8)}${text.codeUnitAt(9)} ");
           setState(
             () {
               d_pv_furnace = dvalidateTemperature(
@@ -2885,35 +2921,26 @@ class _MainAppSampleState extends State<MainAppSample> {
               }
               // For Data Logger
               if (b_data_logger_available) {
-                d_pv_data_logger_temp_a = int.parse(
-                    text.codeUnitAt(31).toString().padLeft(2, '0') +
-                        text.codeUnitAt(32).toString().padLeft(2, '0'));
-                d_pv_data_logger_temp_b = int.parse(
-                    text.codeUnitAt(33).toString().padLeft(2, '0') +
-                        text.codeUnitAt(34).toString().padLeft(2, '0'));
-                d_pv_data_logger_temp_c = int.parse(
-                    text.codeUnitAt(35).toString().padLeft(2, '0') +
-                        text.codeUnitAt(36).toString().padLeft(2, '0'));
-                d_pv_data_logger_temp_d = int.parse(
-                    text.codeUnitAt(37).toString().padLeft(2, '0') +
-                        text.codeUnitAt(38).toString().padLeft(2, '0'));
-                // d_pv_data_logger_temp_a = d_Validate_DataLog_Temp(
-                //     int.parse(text.codeUnitAt(31).toString().padLeft(2, '0') +
-                //         text.codeUnitAt(32).toString().padLeft(2, '0')),
-                //     d_pv_data_logger_temp_a);
-                // d_pv_data_logger_temp_b = d_Validate_DataLog_Temp(
-                //     int.parse(text.codeUnitAt(33).toString().padLeft(2, '0') +
-                //         text.codeUnitAt(34).toString().padLeft(2, '0')),
-                //     d_pv_data_logger_temp_b);
-                // d_pv_data_logger_temp_c = d_Validate_DataLog_Temp(
-                //     int.parse(text.codeUnitAt(35).toString().padLeft(2, '0') +
-                //         text.codeUnitAt(36).toString().padLeft(2, '0')),
-                //     d_pv_data_logger_temp_c);
-                // d_pv_data_logger_temp_d = d_Validate_DataLog_Temp(
-                //     int.parse(text.codeUnitAt(37).toString().padLeft(2, '0') +
-                //         text.codeUnitAt(38).toString().padLeft(2, '0')),
-                //     d_pv_data_logger_temp_d);
+                d_pv_data_logger_temp_a = dvalidateTemperature(
+                    int.parse(text.codeUnitAt(27).toString().padLeft(2, '0') +
+                        text.codeUnitAt(28).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_a);
+                d_pv_data_logger_temp_b = dvalidateTemperature(
+                    int.parse(text.codeUnitAt(29).toString().padLeft(2, '0') +
+                        text.codeUnitAt(30).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_b);
+                d_pv_data_logger_temp_c = dvalidateTemperature(
+                    int.parse(text.codeUnitAt(31).toString().padLeft(2, '0') +
+                        text.codeUnitAt(32).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_c);
+                d_pv_data_logger_temp_d = dvalidateTemperature(
+                    int.parse(text.codeUnitAt(33).toString().padLeft(2, '0') +
+                        text.codeUnitAt(34).toString().padLeft(2, '0')),
+                    d_pv_data_logger_temp_d);
               }
+              // log("Temp: $d_pv_furnace, $d_pv_melt, $d_pv_powder, $d_pv_mould, $d_pv_runway");
+              // log("Lift: $d_pv_lift_pos, $d_pv_pour_pos");
+              // log("Data logger: A -$d_pv_data_logger_temp_a, B -$d_pv_data_logger_temp_b, C -$d_pv_data_logger_temp_c, D -$d_pv_data_logger_temp_d");
               //  else {
               //   d_pv_data_logger_temp_a = 30;
               //   d_pv_data_logger_temp_b = 30;
@@ -2962,7 +2989,7 @@ class _MainAppSampleState extends State<MainAppSample> {
       if (b_btn_Centrifugal) R1 += 2;
 
       // Hydraulic Pump
-      if (b_btn_Sqz_Pump) T4 += 4;
+      if (b_btn_Sqz_Pump) T3 += 4;
 
       //Data Logger Attachment
       if (b_data_logger_available) //check if attachment is enabled
@@ -2970,7 +2997,7 @@ class _MainAppSampleState extends State<MainAppSample> {
         T4 = T4 + 8; // Command
 
       // Vacuum Pump  (or) vacuum solinoid
-      if (b_btn_Vacuum_Pump) T3 += 4;
+      if (b_btn_Vacuum_Pump) T3 += 2;
 
       if (d_pv_furnace > 650) {
         // Bottom Pouring Opne Close
@@ -3011,11 +3038,11 @@ class _MainAppSampleState extends State<MainAppSample> {
       // if d_sv_UV_lift_pos=1 --> DOWN
       //if d_sv_UV_lift_pos=2 --> UP
       if (d_sv_UV_lift_pos == 1) //Down
-        T4 += 2;
+        T4 += 4;
       else if (d_sv_UV_lift_pos == 2) //Up
-        T4 += 1;
-      if (b_btn_EM_Vibrator) T3 += 8;
-      if (b_btn_PowderEMV) R1 += 1;
+        T4 += 2;
+      if (b_btn_EM_Vibrator) T4 += 1;
+      if (b_btn_PowderEMV) T3 += 8;
     }
 
     // converting current values to ascii and sending to terminal
@@ -3116,10 +3143,29 @@ class _MainAppSampleState extends State<MainAppSample> {
     });
   }
 
+  bool getIsWarningShow(String text) {
+    return warningText.split(',').any((element) => element == text);
+  }
+
+  void updateWarningText(String action, String text) {
+    List data = warningText.split(',');
+    if (action == "add") {
+      data.add(text);
+    } else if (action == "remove") {
+      data.remove(text);
+    }
+    if (data.isNotEmpty && data[0] == "") {
+      warningText = data[1];
+    } else {
+      warningText = data.join(',');
+    }
+    setState(() {});
+  }
+
   masterTimer_Event() {
     try {
       setState(() {
-        appConfigTextAssign();
+        // appConfigTextAssign();
         if (bDataReceived) {
           btns['btnMain']!['btnState'] = 'Connected';
           dDataReceivedIndex = 0;
@@ -3170,14 +3216,14 @@ class _MainAppSampleState extends State<MainAppSample> {
             b_B_Gas_Out = false;
           }
         }
+        //STIRRER LIFT POSITION
+        //if d_sv_lift_pos=0  --> OFF
+        // if d_sv_lift_pos=1 --> DOWN
+        //if d_sv_lift_pos=2 --> UP
         if (b_auto_jog_timer) {
-          // print('autojog start');
           d_lift_jog_idx++;
           if (d_lift_jog_idx <= d_sv_autojog) {
             d_sv_lift_pos = 2;
-            // } else if (d_lift_jog_idx > d_sv_autojog) {
-            //   d_sv_lift_pos = 0;
-            //   d_lift_jog_idx++;
           } else {
             if (b_stirrer_down) {
               d_sv_lift_pos = 0;
@@ -3186,38 +3232,54 @@ class _MainAppSampleState extends State<MainAppSample> {
               d_sv_lift_pos = 1;
             }
           }
+        } else {
+          d_sv_lift_pos = 0;
         }
-        //For Furnace
-        if (d_pv_furnace == 0 || d_pv_melt == 0) {
-          if (d_pv_furnace == 0) {
-            if (warningText.contains("No Worry!")) {
-              warningText = "Check Furnace Temp. Sensor!";
-            } else {
-              if (!warningText.contains("Check Furnace Temp. Sensor!")) {
-                warningText += " Check Furnace Temp. Sensor!";
-              }
-            }
-          } else {
-            if (warningText.contains("Check Furnace Temp. Sensor!")) {
-              warningText.replaceAll("Check Furnace Temp. Sensor!", "");
-            }
-          }
 
-          if (d_pv_melt == 0) {
-            if (warningText.contains("No Worry!")) {
-              warningText = "Check Melt Temp. Sensor!";
-            } else {
-              if (!warningText.contains("Check Melt Temp. Sensor!")) {
-                warningText += " Check Melt Temp. Sensor!";
-              }
-            }
-          } else {
-            if (warningText.contains("Check Melt Temp. Sensor!")) ;
-            {
-              warningText.replaceAll("Check Melt Temp. Sensor!", "");
-            }
+        // if (b_auto_jog_timer)
+        // {
+        //   if(b_stirrer_down)
+        //   {
+        //     d_lift_jog_idx++;
+        //     if (d_lift_jog_idx <= d_sv_autojog) {
+        //     d_sv_lift_pos = 2;
+        //   }
+        //   }
+        //   else
+        //    {
+        //       d_sv_lift_pos = 1;
+        //       d_lift_jog_idx=0;
+        //   }
+        //   // print('autojog start');
+        //   else {
+        //     if (b_stirrer_down) {
+        //       d_sv_lift_pos = 0;
+        //       d_lift_jog_idx = 0;
+        //     } else {
+        //       d_sv_lift_pos = 1;
+        //     }
+        //   }
+        // }
+        //For Furnace
+        // if (d_pv_furnace == 0 || d_pv_melt == 0) {
+        if (d_pv_furnace == 0) {
+          if (!getIsWarningShow("Furnace TC!")) {
+            updateWarningText("add", "Furnace TC!");
+          }
+        } else {
+          if (getIsWarningShow("Furnace TC!")) {
+            updateWarningText("remove", "Furnace TC!");
           }
         }
+
+        if (d_pv_melt == 0) {
+          if (!getIsWarningShow("Melt TC!")) {
+            updateWarningText("add", "Melt TC!");
+          }
+        } else if (getIsWarningShow("Melt TC!")) {
+          updateWarningText("remove", "Melt TC!");
+        }
+        // }
         if (b_btn_Furance) {
           if (d_pv_furnace == 0 || d_pv_melt == 0) {
             bFurnaceHeatOUT = false;
@@ -3243,16 +3305,12 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         //For Powder
         if (d_pv_powder == 0) {
-          if (warningText.contains("No Worry!")) {
-            warningText = "Check Powder Temp. Sensor!";
-          } else {
-            if (!warningText.contains("Check Powder Temp. Sensor!")) {
-              warningText += " Check Powder Temp. Sensor!";
-            }
+          if (!getIsWarningShow("Powder TC!")) {
+            updateWarningText("add", "Powder TC!");
           }
         } else {
-          if (warningText.contains("Check Powder Temp. Sensor!")) {
-            warningText.replaceAll("Check Powder Temp. Sensor!", "");
+          if (getIsWarningShow("Powder TC!")) {
+            updateWarningText("remove", "Powder TC!");
           }
         }
         if (b_btn_Powder) {
@@ -3279,16 +3337,12 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         //For Mould
         if (d_pv_mould == 0) {
-          if (warningText.contains("No Worry!")) {
-            warningText = "Check Mould Temp. Sensor!";
-          } else {
-            if (!warningText.contains("Check Mould Temp. Sensor!")) {
-              warningText += " Check Mould Temp. Sensor!";
-            }
+          if (!getIsWarningShow("Mould TC!")) {
+            updateWarningText("add", "Mould TC!");
           }
         } else {
-          if (warningText.contains("Check Mould Temp. Sensor!")) {
-            warningText.replaceAll("Check Mould Temp. Sensor!", "");
+          if (getIsWarningShow("Mould TC!")) {
+            updateWarningText("remove", "Mould TC!");
           }
         }
         if (b_btn_Mould) {
@@ -3315,16 +3369,12 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         //For Runway
         if (d_pv_runway == 0) {
-          if (warningText.contains("No Worry!")) {
-            warningText = "Check Runway Temp. Sensor!";
-          } else {
-            if (!warningText.contains("Check Runway Temp. Sensor!")) {
-              warningText += " Check Runway Temp. Sensor!";
-            }
+          if (!getIsWarningShow("Runway TC!")) {
+            updateWarningText("add", "Runway TC!");
           }
         } else {
-          if (warningText.contains("Check Runway Temp. Sensor!")) {
-            warningText.replaceAll("Check Runway Temp. Sensor!", "");
+          if (getIsWarningShow("Runway TC!")) {
+            updateWarningText("remove", "Runway TC!");
           }
         }
         if (b_btn_Runway) {
@@ -3412,7 +3462,6 @@ class _MainAppSampleState extends State<MainAppSample> {
             d_cen_start_idx++;
         } else
           d_centrifuge_out = 1;
-        if (warningText.isEmpty) warningText = "No worry!";
       });
     } catch (e) {
       if (!errMsgMasterTimer) {

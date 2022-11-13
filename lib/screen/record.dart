@@ -80,6 +80,21 @@ class _RecordScreenState extends State<RecordScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    recordTimerEvent = Timer.periodic(Duration(milliseconds: 10000), (t) {
+      if (widget.isConnected) {
+        if (widget.excelFileContent.length == 0) {
+          widget.onAddExcel([tableHeader()]);
+        }
+        if (widget.b_start_record) {
+          addToRecord();
+        }
+      }
+    });
+  }
+
+  @override
   void dispose() {
     recordScrollController.dispose();
     super.dispose();
@@ -226,7 +241,7 @@ class _RecordScreenState extends State<RecordScreen> {
                               recordFile
                                   .exportFile(content)
                                   .then((exportedFilePath) {
-                                onResetData();
+                                // onResetData();
                                 SnackbarService.showMessage(
                                     context,
                                     exportedFilePath == null
@@ -256,37 +271,30 @@ class _RecordScreenState extends State<RecordScreen> {
   void _updateTimer(String? value) {
     setState(() {
       _tableTimer = value;
+      if (recordTimerEvent.isActive) recordTimerEvent.cancel();
       switch (_tableTimer) {
         case '1 Sec':
-          recordTimerEvent.cancel();
           timerRestart(1000);
           break;
         case '3 Sec':
-          recordTimerEvent.cancel();
           timerRestart(3000);
           break;
         case '5 Sec':
-          recordTimerEvent.cancel();
           timerRestart(5000);
           break;
         case '10 Sec':
-          recordTimerEvent.cancel();
           timerRestart(10000);
           break;
         case '30 Sec':
-          recordTimerEvent.cancel();
           timerRestart(30000);
           break;
         case '1 Min':
-          recordTimerEvent.cancel();
           timerRestart(100000);
           break;
         case '5 Min':
-          recordTimerEvent.cancel();
           timerRestart(500000);
           break;
         case '10 Min':
-          recordTimerEvent.cancel();
           timerRestart(1000000);
           break;
         default:
