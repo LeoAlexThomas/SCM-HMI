@@ -28,6 +28,8 @@ import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 // Calculation
 import 'package:StirCastingMachine/calculation.dart';
 import 'package:marquee_text/marquee_text.dart';
+// To prevent screen to go sleep mode
+import 'package:wakelock/wakelock.dart';
 
 void main() {
   try {
@@ -360,6 +362,7 @@ class _MainAppSampleState extends State<MainAppSample> {
 
   @override
   void dispose() {
+    Wakelock.disable();
     _iptxtcontroller.dispose();
     connection?.close();
     connection?.dispose();
@@ -377,6 +380,7 @@ class _MainAppSampleState extends State<MainAppSample> {
 
   @override
   void initState() {
+    Wakelock.enable();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
