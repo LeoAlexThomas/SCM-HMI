@@ -94,7 +94,7 @@ class _HelpTabState extends State<HelpTab> {
                     ),
                   ),
                   Text(
-                    "Ver #2.0.0.0",
+                    "Ver #3.0.4",
                     style: TextStyle(
                         fontSize: SizeConfig.font_height * 1.75,
                         fontStyle: FontStyle.italic),

@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:StirCastingMachine/data/data.dart';
 import 'package:StirCastingMachine/screen/customer_details.dart';
-import 'package:StirCastingMachine/screen/data_logger.dart';
 import 'package:StirCastingMachine/screen/help.dart';
-import 'package:StirCastingMachine/screen/record.dart';
 import 'package:StirCastingMachine/screen/settings.dart';
 import 'package:StirCastingMachine/tabs/heater_card.dart';
 import 'package:StirCastingMachine/services/size_config.dart';
@@ -67,10 +64,10 @@ class _MainAppSampleState extends State<MainAppSample> {
   BluetoothConnection? connection;
   var calc = Calculation();
   late Timer timer, masterTimer;
-  int d_table_sino = 0;
+  int d_record_table_sino = 0;
   String xlsContent = '';
   List<TableRow> rxdList = [];
-  List excelFileContent = [
+  List recordExcelFileContent = [
     [
       'Si_No',
       'Time',
@@ -331,6 +328,36 @@ class _MainAppSampleState extends State<MainAppSample> {
 
   // static const intromusic = "alert_sound/beep-13.mp3";
 
+  // Record Info
+  late Timer recordTimerEvent;
+  final ScrollController recordScrollController = ScrollController();
+  String? _recordTableTimer;
+  List<String> recordTimer = [
+    '1 Sec',
+    '3 Sec',
+    '5 Sec',
+    '10 Sec',
+    '30 Sec',
+    '1 Min',
+    '5 Min',
+    '10 Min'
+  ];
+
+  // Data logger Info
+  final dataLoggerFile = DataLoggerStorage();
+  late Timer dataLoggerTimerEvent;
+  final ScrollController dataLogScrollController = ScrollController();
+  String? _dataLoggerTableTimer;
+  int d_data_logger_table_sino = 0;
+  List<String> dataLoggerTimer = [
+    '1 Sec',
+    '5 Sec',
+    '10 Sec',
+    '30 Sec',
+    '1 Min',
+    '5 Min',
+  ];
+
   @override
   void dispose() {
     _iptxtcontroller.dispose();
@@ -356,6 +383,31 @@ class _MainAppSampleState extends State<MainAppSample> {
     ]);
     Timer.periodic(Duration(seconds: 1), (t) {
       masterTimer_Event();
+    });
+
+    recordTimerEvent = Timer.periodic(Duration(seconds: 10), (t) {
+      if (isConnected) {
+        if (recordExcelFileContent.length == 0) {
+          addRecordToExcel([recordTableHeader()]);
+        }
+        if (b_start_record) {
+          addToRecord();
+        }
+      }
+    });
+
+    dataLoggerTimerEvent = Timer.periodic(Duration(seconds: 10), (t) {
+      if (isConnected) {
+        if (dataloggerExcelContent.length == 0) {
+          addDataLoggerToExcel([dataLoggerTableHeader()]);
+        }
+        if (b_data_logger_start_record) {
+          DateTime now = DateTime.now();
+          String rxtime = DateFormat('kk:mm:ss').format(now);
+          print("Received time: $rxtime - $now");
+          addToDataLogger(rxtime);
+        }
+      }
     });
 
     appConfigFile.readExcelFile().then((value) {
@@ -430,6 +482,12 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
       }
     });
+
+    // Dummy data for record checking purpose
+
+    // Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   displayText('ccc@192939495969798999112233eeee');
+    // });
 
     super.initState();
   }
@@ -629,12 +687,9 @@ class _MainAppSampleState extends State<MainAppSample> {
                 ),
                 NavBarItem(
                   title: 'DATA LOGGER',
-                  onTap: () => b_data_logger_available
-                      ? setState(() {
-                          selectedIndex = 7;
-                        })
-                      : null,
-                  isAvaiable: b_data_logger_available,
+                  onTap: () => setState(() {
+                    selectedIndex = 7;
+                  }),
                   isSeleted: selectedIndex == 7,
                 ),
                 NavBarItem(
@@ -846,59 +901,6 @@ class _MainAppSampleState extends State<MainAppSample> {
                     ),
                   ),
                   SizedBox(
-                    height: SizeConfig.screen_height * 18,
-                    child: PouringCard(
-                      buttonLabel: btns['btnPour']!['btnState'] as String?,
-                      calc: calc,
-                      buttonColor: btns['btnPour']!['btnColor'] as Color?,
-                      operationName: '1) VALVE',
-                      precentValue: calc.pourCondition(d_pv_pour_pos),
-                      setValue: btns['btnPour']!['btnState'] as String?,
-                      onIncreament: () {
-                        if ((b_btn_Mains) && (!b_btn_Mould)) {
-                          d_sv_mould = calc.valueincrement('mold', d_sv_mould);
-                        }
-                      },
-                      ondecreament: () {
-                        if ((b_btn_Mains) && (!b_btn_Mould)) {
-                          d_sv_mould = calc.valuedecrement('mold', d_sv_mould);
-                        }
-                      },
-                      onIncLongPressStart: (_) {
-                        if ((b_btn_Mains) && (!b_btn_Mould)) {
-                          valueincrementLongPress('mold');
-                        }
-                      },
-                      onDecLongPressStart: (_) {
-                        if ((b_btn_Mains) && (!b_btn_Mould)) {
-                          valuedecrementLongPress('mold');
-                        }
-                      },
-                      onLongPressEnd: (_) => longPressRelease(),
-                      onPress: b_btn_Mains
-                          ? () {
-                              if (b_btn_Mains) {
-                                setState(() {
-                                  if (!b_btn_Pour_Open) {
-                                    showAlertMessageOKCANCEL(
-                                      'Please click OK to open the pour valve!',
-                                    );
-                                  } else {
-                                    b_btn_Pour_Open = btnState('pouring',
-                                        btns['btnPour'], b_btn_Pour_Open);
-                                  }
-                                  if (b_btn_Pour_Open) {
-                                    b_Start_B_Gas_Counter = true;
-                                  } else {
-                                    d_B_Gas_idx = 0;
-                                  }
-                                });
-                              }
-                            }
-                          : null,
-                    ),
-                  ),
-                  SizedBox(
                     height: SizeConfig.screen_height * 31,
                     child: StirrerCard(
                       stirrerButtonLabel:
@@ -1056,6 +1058,59 @@ class _MainAppSampleState extends State<MainAppSample> {
                       },
                       onLongPressEnd: (_) => longPressRelease(),
                       calc: calc,
+                    ),
+                  ),
+                  SizedBox(
+                    height: SizeConfig.screen_height * 18,
+                    child: PouringCard(
+                      buttonLabel: btns['btnPour']!['btnState'] as String?,
+                      calc: calc,
+                      buttonColor: btns['btnPour']!['btnColor'] as Color?,
+                      operationName: '1) VALVE',
+                      precentValue: calc.pourCondition(d_pv_pour_pos),
+                      setValue: btns['btnPour']!['btnState'] as String?,
+                      onIncreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          d_sv_mould = calc.valueincrement('mold', d_sv_mould);
+                        }
+                      },
+                      ondecreament: () {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          d_sv_mould = calc.valuedecrement('mold', d_sv_mould);
+                        }
+                      },
+                      onIncLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          valueincrementLongPress('mold');
+                        }
+                      },
+                      onDecLongPressStart: (_) {
+                        if ((b_btn_Mains) && (!b_btn_Mould)) {
+                          valuedecrementLongPress('mold');
+                        }
+                      },
+                      onLongPressEnd: (_) => longPressRelease(),
+                      onPress: b_btn_Mains
+                          ? () {
+                              if (b_btn_Mains) {
+                                setState(() {
+                                  if (!b_btn_Pour_Open) {
+                                    showAlertMessageOKCANCEL(
+                                      'Please click OK to open the pour valve!',
+                                    );
+                                  } else {
+                                    b_btn_Pour_Open = btnState('pouring',
+                                        btns['btnPour'], b_btn_Pour_Open);
+                                  }
+                                  if (b_btn_Pour_Open) {
+                                    b_Start_B_Gas_Counter = true;
+                                  } else {
+                                    d_B_Gas_idx = 0;
+                                  }
+                                });
+                              }
+                            }
+                          : null,
                     ),
                   ),
                 ],
@@ -1675,6 +1730,401 @@ class _MainAppSampleState extends State<MainAppSample> {
     }
   }
 
+  Widget _tableChildRow(String childValue) {
+    return Container(
+      padding: EdgeInsets.only(
+        top: SizeConfig.screen_height * 0.5,
+        bottom: SizeConfig.screen_height * 0.5,
+      ),
+      width: double.infinity,
+      alignment: Alignment.center,
+      child: Text(
+        childValue,
+        style: TextStyle(
+          fontSize: SizeConfig.font_height * 2,
+        ),
+      ),
+    );
+  }
+
+  void addToRecord() {
+    String rxtime = DateFormat('kk:mm:ss').format(DateTime.now());
+    d_record_table_sino++;
+    addRecordRxdList(
+      TableRow(
+        children: [
+          _tableChildRow(d_record_table_sino.toString()),
+          _tableChildRow(rxtime),
+          _tableChildRow(d_pv_melt.toString()),
+          _tableChildRow(d_pv_powder.toString()),
+          _tableChildRow(d_pv_mould.toString()),
+          _tableChildRow(d_pv_stirrer.toString()),
+          _tableChildRow(b_btn_Pour_Open ? 'OPEN' : 'CLOSE'),
+          if (b_inert_available) _tableChildRow(d_pv_gas_flow.toString()),
+          if (b_vacuum_available)
+            _tableChildRow(b_btn_Vacuum_Pump ? 'ON' : 'OFF'),
+          if (b_centrifugal_available)
+            _tableChildRow(d_pv_centrifuge.toString()),
+          if (b_squeeze_available) _tableChildRow(d_pv_sqz_prsr.toString()),
+        ],
+      ),
+    );
+    addRecordToExcel([
+      d_record_table_sino,
+      rxtime,
+      d_pv_melt,
+      d_pv_powder,
+      d_pv_mould,
+      d_pv_stirrer,
+      d_pv_gas_flow,
+      b_btn_Pour_Open ? 'ON' : 'OFF',
+      d_pv_sqz_prsr,
+      b_btn_Vacuum_Pump ? 'ON' : 'OFF'
+    ]);
+    if (recordScrollController.hasClients) {
+      recordScrollController
+          .jumpTo(recordScrollController.position.maxScrollExtent);
+    }
+    print("Record adding");
+  }
+
+  void addToDataLogger(String rxtime) {
+    d_data_logger_table_sino++;
+    addDataLoggerRxdList(
+      TableRow(
+        children: [
+          _tableChildRow(d_data_logger_table_sino.toString()),
+          _tableChildRow(rxtime),
+          _tableChildRow(d_pv_data_logger_temp_a.toString()),
+          _tableChildRow(d_pv_data_logger_temp_b.toString()),
+          _tableChildRow(d_pv_data_logger_temp_c.toString()),
+          _tableChildRow(d_pv_data_logger_temp_d.toString()),
+        ],
+      ),
+    );
+    addDataLoggerToExcel([
+      d_data_logger_table_sino,
+      rxtime,
+      d_pv_data_logger_temp_a,
+      d_pv_data_logger_temp_b,
+      d_pv_data_logger_temp_c,
+      d_pv_data_logger_temp_d,
+    ]);
+    if (dataLogScrollController.hasClients) {
+      dataLogScrollController
+          .jumpTo(dataLogScrollController.position.maxScrollExtent);
+    }
+    print("Data logger adding");
+  }
+
+  Widget _buildTableHeaderCell(String title) {
+    return Container(
+      padding: EdgeInsets.only(
+        top: SizeConfig.screen_height * 0.5,
+        bottom: SizeConfig.screen_height * 0.5,
+      ),
+      width: double.infinity,
+      color: Colors.blue,
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: SizeConfig.font_height * 2,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  TableRow recordTableHeader() {
+    return TableRow(
+      children: [
+        _buildTableHeaderCell('#'),
+        _buildTableHeaderCell('TIME'),
+        _buildTableHeaderCell('MELT'),
+        _buildTableHeaderCell('POWDER'),
+        _buildTableHeaderCell('MOULD'),
+        _buildTableHeaderCell('STIR'),
+        _buildTableHeaderCell('POUR'),
+        if (b_inert_available) _buildTableHeaderCell('GAS'),
+        if (b_vacuum_available) _buildTableHeaderCell('VAC'),
+        if (b_centrifugal_available) _buildTableHeaderCell('CENT'),
+        if (b_squeeze_available) _buildTableHeaderCell('SQZ'),
+      ],
+    );
+  }
+
+  TableRow dataLoggerTableHeader() {
+    return TableRow(
+      children: [
+        _buildTableHeaderCell('#'),
+        _buildTableHeaderCell('TIME'),
+        _buildTableHeaderCell('TEMP A'),
+        _buildTableHeaderCell('TEMP B'),
+        _buildTableHeaderCell('TEMP C'),
+        _buildTableHeaderCell('TEMP D'),
+      ],
+    );
+  }
+
+  Widget _buildButton({
+    required String buttonLabel,
+    required Color buttonColor,
+    required VoidCallback? onPressed,
+  }) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        primary: buttonColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+      ),
+      onPressed: onPressed,
+      child: Text(
+        buttonLabel,
+        style: TextStyle(
+          fontSize: SizeConfig.font_height * 2,
+          color: AppColors.white,
+        ),
+      ),
+    );
+  }
+
+  void _updateRecordTimer(String? value) {
+    print("record time Value: $value");
+    setState(() {
+      _recordTableTimer = value;
+      if (recordTimerEvent.isActive) recordTimerEvent.cancel();
+      switch (_recordTableTimer) {
+        case '1 Sec':
+          recordTimerRestart(1);
+          break;
+        case '3 Sec':
+          recordTimerRestart(3);
+          break;
+        case '5 Sec':
+          recordTimerRestart(5);
+          break;
+        case '10 Sec':
+          recordTimerRestart(10);
+          break;
+        case '30 Sec':
+          recordTimerRestart(30);
+          break;
+        case '1 Min':
+          recordTimerRestart(60);
+          break;
+        case '5 Min':
+          recordTimerRestart(300);
+          break;
+        case '10 Min':
+          recordTimerRestart(600);
+          break;
+        default:
+          recordTimerRestart(10);
+          break;
+      }
+    });
+  }
+
+  void recordTimerRestart(int _timer) {
+    recordTimerEvent = Timer.periodic(Duration(seconds: _timer), (t) {
+      if (btns['btnMain']!['btnState'] == 'Connected') {
+        if (recordExcelFileContent.length == 0) {
+          addRecordToExcel([recordTableHeader()]);
+        }
+        if (b_start_record) {
+          addToRecord();
+        }
+      }
+    });
+  }
+
+  void _updateDataLoggerTimer(String? value) {
+    setState(() {
+      print("date time value: $value");
+      _dataLoggerTableTimer = value;
+      if (dataLoggerTimerEvent.isActive) dataLoggerTimerEvent.cancel();
+      switch (_dataLoggerTableTimer) {
+        case '1 Sec':
+          dataLoggerTimerRestart(1);
+          break;
+        case '5 Sec':
+          dataLoggerTimerRestart(5);
+          break;
+        case '10 Sec':
+          dataLoggerTimerRestart(10);
+          break;
+        case '30 Sec':
+          dataLoggerTimerRestart(30);
+          break;
+        case '1 Min':
+          dataLoggerTimerRestart(60);
+          break;
+        case '5 Min':
+          dataLoggerTimerRestart(300);
+          break;
+        default:
+          dataLoggerTimerRestart(10);
+          break;
+      }
+    });
+  }
+
+  void dataLoggerTimerRestart(int _timer) {
+    print("data logger time Value: $_timer");
+    dataLoggerTimerEvent = Timer.periodic(Duration(seconds: _timer), (t) {
+      if (btns['btnMain']!['btnState'] == 'Connected') {
+        if (dataloggerExcelContent.length == 0) {
+          addDataLoggerToExcel([dataLoggerTableHeader()]);
+        }
+        if (b_data_logger_start_record) {
+          DateTime now = DateTime.now();
+          String rxtime = DateFormat('kk:mm:ss').format(now);
+          print("Received time: $rxtime - $now");
+          addToDataLogger(rxtime);
+        }
+      }
+    });
+  }
+
+  Widget record() {
+    return Column(
+      children: [
+        Table(
+          children: [
+            recordTableHeader(),
+          ],
+          border: TableBorder.all(
+            color: Colors.black,
+            style: BorderStyle.solid,
+            width: 2,
+          ),
+        ),
+        Expanded(
+          child: Scrollbar(
+            child: ListView(
+              controller: recordScrollController,
+              children: [
+                Table(
+                  border: TableBorder.all(
+                    color: Colors.black,
+                    style: BorderStyle.solid,
+                    width: 2,
+                  ),
+                  children: rxdList,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 5),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              width: SizeConfig.screen_width * 14,
+              height: SizeConfig.screen_height * 5,
+              margin: EdgeInsets.only(left: SizeConfig.screen_width * 1),
+              child: _buildButton(
+                buttonColor: b_start_record ? AppColors.red! : AppColors.green,
+                onPressed: b_btn_Mains
+                    ? () {
+                        onStartRecordPressed();
+                        if (b_start_record)
+                          _updateRecordTimer(_recordTableTimer);
+                      }
+                    : null,
+                buttonLabel: b_start_record ? 'Stop Record' : 'Start Record',
+              ),
+            ),
+            Stack(
+              children: [
+                Container(
+                  width: SizeConfig.screen_width * 32.0,
+                  height: SizeConfig.screen_height * 5,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Container(
+                        width: SizeConfig.screen_width * 7,
+                        // height: SizeConfig.screen_height * 5,
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            style: TextStyle(
+                              fontSize: SizeConfig.font_height * 2,
+                              color: AppColors.black,
+                            ),
+                            value: _recordTableTimer,
+                            items: recordTimer
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem(
+                                value: value,
+                                child: Text(
+                                  value,
+                                  style: TextStyle(
+                                    fontSize: SizeConfig.font_height * 2,
+                                    color: AppColors.black,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            hint: Text('10 Sec'),
+                            onChanged:
+                                b_start_record ? null : _updateRecordTimer,
+                          ),
+                        ),
+                      ),
+                      _buildButton(
+                        buttonLabel: 'CLEAN',
+                        buttonColor: AppColors.blue,
+                        onPressed: onRecordReset,
+                      ),
+                      _buildButton(
+                        buttonLabel: 'EXPORT',
+                        buttonColor: AppColors.blue,
+                        onPressed: () async {
+                          if (recordExcelFileContent.length == 1) {
+                            SnackbarService.showMessage(
+                                context, "Record is Empty");
+                          } else {
+                            String content = '';
+                            recordExcelFileContent.forEach((element) {
+                              element.forEach((ele) {
+                                content += '${ele.toString()}\t';
+                              });
+                              content += '\n';
+                              recordFile
+                                  .exportFile(content)
+                                  .then((exportedFilePath) {
+                                // onResetData();
+                                SnackbarService.showMessage(
+                                    context,
+                                    exportedFilePath == null
+                                        ? "Record Exported"
+                                        : "Record Exported to this path: $exportedFilePath");
+                              });
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                if (b_start_record)
+                  Container(
+                    color: Colors.grey.shade200,
+                  ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
 // debug
   debugConsole() {
     return Container(
@@ -1829,6 +2279,231 @@ class _MainAppSampleState extends State<MainAppSample> {
     }
   }
 
+  void addRecordToExcel(List excelData) {
+    setState(() {
+      recordExcelFileContent.add(excelData);
+    });
+  }
+
+  void addDataLoggerToExcel(List newData) {
+    setState(() {
+      dataloggerExcelContent.add(newData);
+    });
+  }
+
+  void addRecordRxdList(TableRow newRow) {
+    setState(() {
+      rxdList.add(newRow);
+    });
+  }
+
+  void addDataLoggerRxdList(TableRow newRow) {
+    setState(() {
+      rxdDataLoggerList.add(newRow);
+    });
+  }
+
+  void onStartRecordPressed() {
+    setState(() {
+      b_start_record = !b_start_record;
+    });
+  }
+
+  void onStartDataLoggerPressed() {
+    setState(() {
+      b_data_logger_start_record = !b_data_logger_start_record;
+      b_btn_Data_Logger = b_data_logger_start_record;
+    });
+  }
+
+  void onDataLoggerExport() async {
+    final dataLoggerFile = DataLoggerStorage();
+    if (dataloggerExcelContent.length == 1) {
+      SnackbarService.showMessage(context, "Record is Empty");
+    } else {
+      String content = '';
+      dataloggerExcelContent.forEach((element) {
+        element.forEach((ele) {
+          content += '${ele.toString()}\t';
+        });
+        content += '\n';
+        dataLoggerFile.exportFile(content).then((exportedFilePath) {
+          // setState(() {
+          //   rxdDataLoggerList = [];
+          //   dataloggerExcelContent = [
+          //     [
+          //       'Si_No',
+          //       'Temp A',
+          //       'Temp B',
+          //       'Temp C',
+          //       'Temp D',
+          //     ]
+          //   ];
+          // });
+          SnackbarService.showMessage(
+            context,
+            exportedFilePath == null
+                ? "Data Logger File exported"
+                : "Data Logger file exported here: $exportedFilePath",
+          );
+        });
+      });
+    }
+  }
+
+  void onRecordReset() {
+    setState(() {
+      d_record_table_sino = 0;
+      rxdList = [];
+      recordExcelFileContent = [
+        [
+          'Si_No',
+          'Time',
+          'Melt',
+          'Powder',
+          'Mould',
+          'Stirrer',
+          'Gas',
+          'Pour',
+          'Squeeze',
+          'Vaccum'
+        ]
+      ];
+    });
+  }
+
+  void onDataLoggerReset() {
+    setState(() {
+      d_data_logger_table_sino = 0;
+      rxdDataLoggerList = [];
+      dataloggerExcelContent = [
+        [
+          'Si_No',
+          'Temp A',
+          'Temp B',
+          'Temp C',
+          'Temp D',
+        ]
+      ];
+    });
+  }
+
+  Widget dataLogger() {
+    return Column(
+      children: [
+        Table(
+          children: [
+            dataLoggerTableHeader(),
+          ],
+          border: TableBorder.all(
+            color: Colors.black,
+            style: BorderStyle.solid,
+            width: 2,
+          ),
+        ),
+        Expanded(
+          child: Scrollbar(
+            child: ListView(
+              controller: dataLogScrollController,
+              children: [
+                Table(
+                  border: TableBorder.all(
+                    color: Colors.black,
+                    style: BorderStyle.solid,
+                    width: 2,
+                  ),
+                  children: rxdDataLoggerList,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 5),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              width: SizeConfig.screen_width * 14,
+              height: SizeConfig.screen_height * 5,
+              margin: EdgeInsets.only(left: SizeConfig.screen_width * 1),
+              child: _buildButton(
+                buttonColor: b_data_logger_start_record
+                    ? AppColors.red!
+                    : AppColors.green,
+                onPressed: b_btn_Mains
+                    ? () {
+                        onStartDataLoggerPressed();
+                        if (b_data_logger_start_record)
+                          _updateDataLoggerTimer(_dataLoggerTableTimer);
+                      }
+                    : null,
+                buttonLabel: b_data_logger_start_record
+                    ? 'Stop Data Log'
+                    : 'Start Data Log',
+              ),
+            ),
+            Stack(
+              children: [
+                Container(
+                  width: SizeConfig.screen_width * 32.0,
+                  height: SizeConfig.screen_height * 5,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Container(
+                        width: SizeConfig.screen_width * 7,
+                        // height: SizeConfig.screen_height * 5,
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            style: TextStyle(
+                              fontSize: SizeConfig.font_height * 2,
+                              color: AppColors.black,
+                            ),
+                            value: _dataLoggerTableTimer,
+                            items: dataLoggerTimer
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem(
+                                value: value,
+                                child: Text(
+                                  value,
+                                  style: TextStyle(
+                                    fontSize: SizeConfig.font_height * 2,
+                                    color: AppColors.black,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            hint: Text('10 Sec'),
+                            onChanged: _updateDataLoggerTimer,
+                          ),
+                        ),
+                      ),
+                      _buildButton(
+                        buttonLabel: 'CLEAN',
+                        buttonColor: AppColors.blue,
+                        onPressed: onDataLoggerReset,
+                      ),
+                      _buildButton(
+                        buttonLabel: 'EXPORT',
+                        buttonColor: AppColors.blue,
+                        onPressed: onDataLoggerExport,
+                      ),
+                    ],
+                  ),
+                ),
+                if (b_data_logger_start_record)
+                  Container(
+                    color: Colors.grey.shade200,
+                  ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
   mainScreen() {
     if (isConnected) {
       if (selectedIndex == 0) {
@@ -1845,61 +2520,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                 rxScrollController: rxDebugScrollController,
                 txScrollController: txDebugScrollController,
               )
-            : RecordScreen(
-                isConnected: btns['btnMain']!['btnState'] == 'Connected',
-                isMainOn: b_btn_Mains,
-                isDebug: true,
-                isPourOpen: b_btn_Pour_Open,
-                isVaccumOn: b_btn_Vacuum_Pump,
-                isGasAvaible: b_inert_available,
-                isCentrifugeAvaible: b_centrifugal_available,
-                isSqueezeAvaible: b_squeeze_available,
-                isVaccumAvaible: b_vacuum_available,
-                melt: d_pv_melt,
-                powder: d_pv_powder,
-                mould: d_pv_mould,
-                stirrer: d_pv_stirrer,
-                gasFlow: d_pv_gas_flow,
-                centrifuge: d_pv_centrifuge,
-                sqzPresure: d_pv_sqz_prsr,
-                excelFileContent: excelFileContent,
-                rxdList: rxdList,
-                b_start_record: b_start_record,
-                onStartRecordPressed: () {
-                  setState(() {
-                    b_start_record = !b_start_record;
-                  });
-                },
-                onAddExcel: (List excelData) {
-                  setState(() {
-                    excelFileContent.add(excelData);
-                  });
-                },
-                onAddRxdList: (TableRow newRow) {
-                  setState(() {
-                    rxdList.add(newRow);
-                  });
-                },
-                onRest: () {
-                  setState(() {
-                    rxdList = [];
-                    excelFileContent = [
-                      [
-                        'Si_No',
-                        'Time',
-                        'Melt',
-                        'Powder',
-                        'Mould',
-                        'Stirrer',
-                        'Gas',
-                        'Pour',
-                        'Squeeze',
-                        'Vaccum'
-                      ]
-                    ];
-                  });
-                },
-              );
+            : record();
       } else if (selectedIndex == 4) {
         return SettingsTab(
           appConfig: appconfig!,
@@ -2030,81 +2651,82 @@ class _MainAppSampleState extends State<MainAppSample> {
           isWarrentyExpired: warrantyStatus(clientInfo![5]),
         );
       } else if (selectedIndex == 7) {
-        return DataLogger(
-          isConnected: btns['btnMain']!['btnState'] == 'Connected',
-          isMainOn: b_btn_Mains,
-          tempA: d_pv_data_logger_temp_a,
-          tempB: d_pv_data_logger_temp_b,
-          tempC: d_pv_data_logger_temp_c,
-          tempD: d_pv_data_logger_temp_d,
-          b_start_record: b_data_logger_start_record,
-          onRest: () {
-            setState(() {
-              rxdDataLoggerList = [];
-              dataloggerExcelContent = [
-                [
-                  'Si_No',
-                  'Temp A',
-                  'Temp B',
-                  'Temp C',
-                  'Temp D',
-                ]
-              ];
-            });
-          },
-          onStartRecordPressed: () {
-            setState(() {
-              b_data_logger_start_record = !b_data_logger_start_record;
-              b_btn_Data_Logger = b_data_logger_start_record;
-            });
-          },
-          rxdList: rxdDataLoggerList,
-          excelFileContent: dataloggerExcelContent,
-          onAddExcelContent: (List newData) {
-            setState(() {
-              dataloggerExcelContent.add(newData);
-            });
-          },
-          onAddRxdList: (TableRow newRow) {
-            setState(() {
-              rxdDataLoggerList.add(newRow);
-            });
-          },
-          onExport: () async {
-            final dataLoggerFile = DataLoggerStorage();
-            if (dataloggerExcelContent.length == 1) {
-              SnackbarService.showMessage(context, "Record is Empty");
-            } else {
-              String content = '';
-              dataloggerExcelContent.forEach((element) {
-                element.forEach((ele) {
-                  content += '${ele.toString()}\t';
-                });
-                content += '\n';
-                dataLoggerFile.exportFile(content).then((exportedFilePath) {
-                  // setState(() {
-                  //   rxdDataLoggerList = [];
-                  //   dataloggerExcelContent = [
-                  //     [
-                  //       'Si_No',
-                  //       'Temp A',
-                  //       'Temp B',
-                  //       'Temp C',
-                  //       'Temp D',
-                  //     ]
-                  //   ];
-                  // });
-                  SnackbarService.showMessage(
-                    context,
-                    exportedFilePath == null
-                        ? "Data Logger File exported"
-                        : "Data Logger file exported here: $exportedFilePath",
-                  );
-                });
-              });
-            }
-          },
-        );
+        return dataLogger();
+        // return DataLogger(
+        //   isConnected: btns['btnMain']!['btnState'] == 'Connected',
+        //   isMainOn: b_btn_Mains,
+        //   tempA: d_pv_data_logger_temp_a,
+        //   tempB: d_pv_data_logger_temp_b,
+        //   tempC: d_pv_data_logger_temp_c,
+        //   tempD: d_pv_data_logger_temp_d,
+        //   b_start_record: b_data_logger_start_record,
+        //   onRest: () {
+        //     setState(() {
+        //       rxdDataLoggerList = [];
+        //       dataloggerExcelContent = [
+        //         [
+        //           'Si_No',
+        //           'Temp A',
+        //           'Temp B',
+        //           'Temp C',
+        //           'Temp D',
+        //         ]
+        //       ];
+        //     });
+        //   },
+        //   onStartRecordPressed: () {
+        //     setState(() {
+        //       b_data_logger_start_record = !b_data_logger_start_record;
+        //       b_btn_Data_Logger = b_data_logger_start_record;
+        //     });
+        //   },
+        //   rxdList: rxdDataLoggerList,
+        //   excelFileContent: dataloggerExcelContent,
+        //   onAddExcelContent: (List newData) {
+        //     setState(() {
+        //       dataloggerExcelContent.add(newData);
+        //     });
+        //   },
+        //   onAddRxdList: (TableRow newRow) {
+        //     setState(() {
+        //       rxdDataLoggerList.add(newRow);
+        //     });
+        //   },
+        //   onExport: () async {
+        //     final dataLoggerFile = DataLoggerStorage();
+        //     if (dataloggerExcelContent.length == 1) {
+        //       SnackbarService.showMessage(context, "Record is Empty");
+        //     } else {
+        //       String content = '';
+        //       dataloggerExcelContent.forEach((element) {
+        //         element.forEach((ele) {
+        //           content += '${ele.toString()}\t';
+        //         });
+        //         content += '\n';
+        //         dataLoggerFile.exportFile(content).then((exportedFilePath) {
+        //           // setState(() {
+        //           //   rxdDataLoggerList = [];
+        //           //   dataloggerExcelContent = [
+        //           //     [
+        //           //       'Si_No',
+        //           //       'Temp A',
+        //           //       'Temp B',
+        //           //       'Temp C',
+        //           //       'Temp D',
+        //           //     ]
+        //           //   ];
+        //           // });
+        //           SnackbarService.showMessage(
+        //             context,
+        //             exportedFilePath == null
+        //                 ? "Data Logger File exported"
+        //                 : "Data Logger file exported here: $exportedFilePath",
+        //           );
+        //         });
+        //       });
+        //     }
+        //   },
+        // );
       }
     } else {
       if (b_start_autoConnect) {
@@ -2994,7 +3616,10 @@ class _MainAppSampleState extends State<MainAppSample> {
       //Data Logger Attachment
       if (b_data_logger_available) //check if attachment is enabled
       if (b_btn_Data_Logger) // check if button is clicked
+      {
         T4 = T4 + 8; // Command
+        D1 = D1 - 40;
+      }
 
       // Vacuum Pump  (or) vacuum solinoid
       if (b_btn_Vacuum_Pump) T3 += 2;

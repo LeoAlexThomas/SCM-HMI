@@ -73,6 +73,7 @@ class StirrerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.symmetric(vertical: SizeConfig.screen_height * 0.5),
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
