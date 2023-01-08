@@ -41,7 +41,6 @@ class PouringCard extends StatelessWidget {
     return Container(
       color: Colors.white,
       // padding: EdgeInsets.symmetric(vertical: SizeConfig.screen_height * 1),
-      margin: EdgeInsets.symmetric(vertical: SizeConfig.screen_height * 0.5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceAround,
