@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:StirCastingMachine/data/data.dart';
 import 'package:StirCastingMachine/screen/customer_details.dart';
 import 'package:StirCastingMachine/screen/help.dart';
@@ -2918,11 +2919,11 @@ class _MainAppSampleState extends State<MainAppSample> {
       timer = Timer.periodic(Duration(milliseconds: 200), (t) {
         setState(() {
           if (name == 'furnace') {
-            if (d_sv_furnace < 1000) {
+            if (d_sv_furnace < 1150) {
               d_sv_furnace += 10;
             }
           } else if (name == 'melt') {
-            if (d_sv_melt < 1000) {
+            if (d_sv_melt < 1150) {
               d_sv_melt += 10;
             }
           } else if (name == 'powder') {
