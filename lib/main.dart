@@ -2093,22 +2093,15 @@ class _MainAppSampleState extends State<MainAppSample> {
                             SnackbarService.showMessage(
                                 context, "Record is Empty");
                           } else {
-                            String content = '';
-                            recordExcelFileContent.forEach((element) {
-                              element.forEach((ele) {
-                                content += '${ele.toString()}\t';
-                              });
-                              content += '\n';
-                              recordFile
-                                  .exportFile(content)
-                                  .then((exportedFilePath) {
-                                // onResetData();
-                                SnackbarService.showMessage(
-                                    context,
-                                    exportedFilePath == null
-                                        ? "Record Exported"
-                                        : "Record Exported to this path: $exportedFilePath");
-                              });
+                            recordFile
+                                .exportFile(recordExcelFileContent)
+                                .then((exportedFilePath) {
+                              // onResetData();
+                              SnackbarService.showMessage(
+                                  context,
+                                  exportedFilePath == null
+                                      ? "Record Exported"
+                                      : "Record Exported to this path: $exportedFilePath");
                             });
                           }
                         },
@@ -2325,32 +2318,15 @@ class _MainAppSampleState extends State<MainAppSample> {
     if (dataloggerExcelContent.length == 1) {
       SnackbarService.showMessage(context, "Record is Empty");
     } else {
-      String content = '';
-      dataloggerExcelContent.forEach((element) {
-        element.forEach((ele) {
-          content += '${ele.toString()}\t';
-        });
-        content += '\n';
-        dataLoggerFile.exportFile(content).then((exportedFilePath) {
-          // setState(() {
-          //   rxdDataLoggerList = [];
-          //   dataloggerExcelContent = [
-          //     [
-          //       'Si_No',
-          //       'Temp A',
-          //       'Temp B',
-          //       'Temp C',
-          //       'Temp D',
-          //     ]
-          //   ];
-          // });
-          SnackbarService.showMessage(
-            context,
-            exportedFilePath == null
-                ? "Data Logger File exported"
-                : "Data Logger file exported here: $exportedFilePath",
-          );
-        });
+      dataLoggerFile
+          .exportFile(dataloggerExcelContent)
+          .then((exportedFilePath) {
+        SnackbarService.showMessage(
+          context,
+          exportedFilePath == null
+              ? "Data Logger File exported"
+              : "Data Logger file exported here: $exportedFilePath",
+        );
       });
     }
   }

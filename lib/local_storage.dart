@@ -313,28 +313,36 @@ class AppConfigStorage {
 }
 
 class RecordStorage {
-  Future<File?> _localExcelfile() async {
+  Future<String?> _localExcelfile() async {
     final path = await _localpath();
     print(path);
     if (path == null) {
       return null;
     }
-    String recordName =
-        DateFormat('dd-mm-yyyy_hh:mm:ss').format(DateTime.now());
-    return File('$path/SCM-Export_${recordName}.xls');
+    return path;
   }
 
-  Future<String?> exportFile(String str) async {
-    File? file = await _localExcelfile();
-    if (file == null) {
+  Future<String?> exportFile(List str) async {
+    String recordTime =
+        DateFormat('dd-mm-yyyy_hh:mm:ss').format(DateTime.now());
+    final String recordFileName = "SCM-Export_${recordTime}.xlsx";
+    String? filePath = await _localExcelfile();
+    if (filePath == null) {
       LogEntryStorage().writeLogfile("Exported excel FILE PATH NOT FOUND");
       return null;
     }
+    Excel excel = Excel.createExcel();
+    Sheet sheet = excel['Sheet1'];
+    for (var i = 0; i < str.length; i++) {
+      sheet.insertRowIterables(str[i], i);
+    }
 
-    file.writeAsString(str);
+    final fileBytes = excel.save(fileName: recordFileName);
+    File('$filePath/${recordFileName}')
+      ..createSync(recursive: true)
+      ..writeAsBytesSync(fileBytes!);
 
-    return file.path;
-    // print('content updated');
+    return '$filePath/$recordFileName';
   }
 
   Future<String?> readRecord() async {
@@ -376,27 +384,35 @@ class RecordStorage {
 }
 
 class DataLoggerStorage {
-  Future<File?> _localExcelfile() async {
+  Future<String?> _localExcelfile() async {
     final path = await _localpath();
     if (path == null) {
       return null;
     }
-    String recordName =
-        DateFormat('dd_mm_yyyy_hh_mm_ss').format(DateTime.now());
-    return File('$path/SCM_DL_Export_${recordName}.xls');
+    return path;
   }
 
-  Future<String?> exportFile(String str) async {
-    File? file = await _localExcelfile();
-    if (file == null) {
-      LogEntryStorage().writeLogfile(
-          'Execption in writing RECORD file: File path not found');
+  Future<String?> exportFile(List str) async {
+    String recordTime =
+        DateFormat('dd-mm-yyyy_hh:mm:ss').format(DateTime.now());
+    final String recordFileName = "SCM_DL_Export_${recordTime}.xlsx";
+    String? filePath = await _localExcelfile();
+    if (filePath == null) {
+      LogEntryStorage().writeLogfile("Exported excel FILE PATH NOT FOUND");
       return null;
     }
-    print("Exported successfully");
-    file.writeAsString(str);
-    return file.path;
-    // print('content updated');
+    Excel excel = Excel.createExcel();
+    Sheet sheet = excel['Sheet1'];
+    for (var i = 0; i < str.length; i++) {
+      sheet.insertRowIterables(str[i], i);
+    }
+
+    final fileBytes = excel.save(fileName: recordFileName);
+    File('$filePath/${recordFileName}')
+      ..createSync(recursive: true)
+      ..writeAsBytesSync(fileBytes!);
+
+    return '$filePath/$recordFileName';
   }
 
   Future<File?> writeDataLoggerfile(String st) async {
