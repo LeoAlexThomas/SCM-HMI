@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart';
 
+import 'main.dart';
+
 Future<String?> _localpath() async {
   final directory = await getExternalStorageDirectory();
   return directory?.path;
@@ -18,6 +20,11 @@ Future<File?> localFile(String fileName) async {
     return null;
   }
   return File('$path/$fileName');
+}
+
+SendIncreamentActionEnums getTxEvent(String event) {
+  return txEventsList.firstWhere(
+      (SendIncreamentActionEnums e) => e.value == event.replaceAll(' ', ''));
 }
 
 class AppConfigStorage {
@@ -38,7 +45,7 @@ class AppConfigStorage {
       final Uint8List excelFileConverted = await excelFile.readAsBytes();
       var excel = Excel.decodeBytes(excelFileConverted);
 
-      Sheet sheetObject = excel['Sheet1'];
+      Sheet sheetObject = excel['Parameters'];
       //below Getting cell(e.g. C3 position) by using sheetObject and adding cell's value to clientDetails List after getting cell from sheet
       // HelpFilePath
       helpFilePath = sheetObject.cell(CellIndex.indexByString('H19')).value;
@@ -141,6 +148,71 @@ class AppConfigStorage {
     } catch (e) {
       print('Exception in reading excel file : $e');
       LogEntryStorage().writeLogfile('Exception in reading excel file : $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, SendIncreamentActionEnums>?> readIOInputs() async {
+    try {
+      // For Config excel file
+      Map<String, SendIncreamentActionEnums> txEvents = {};
+      final excelFile = await localFile("config.xlsx");
+      if (excelFile == null) {
+        return null;
+      }
+      final Uint8List excelFileConverted = await excelFile.readAsBytes();
+      var excel = Excel.decodeBytes(excelFileConverted);
+
+      Sheet sheetObject = excel['IO'];
+      txEvents["main"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C3')).value);
+      txEvents["pourOpen"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C4')).value);
+      txEvents["pourClose"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C5')).value);
+      txEvents["stirrerUp"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C6')).value);
+      txEvents["stirrerDown"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C7')).value);
+      txEvents["gasInletArgon"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C8')).value);
+      txEvents["gasInletSF6"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C9')).value);
+      txEvents["gasOutRetort"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C10')).value);
+      txEvents["gasOutPouring"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C11')).value);
+      txEvents["vaccumPump"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C12')).value);
+      txEvents["squeezePump"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C13')).value);
+      txEvents["powderEMV"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C14')).value);
+      txEvents["uvVibrator"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C15')).value);
+      txEvents["uvUp"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C16')).value);
+      txEvents["uvDown"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C17')).value);
+      txEvents["dataLogger"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('C18')).value);
+      txEvents["furnace"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('H3')).value);
+      txEvents["powder"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('H4')).value);
+      txEvents["mould"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('H5')).value);
+      txEvents["runway"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('H6')).value);
+      txEvents["stirrer"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('H10')).value);
+      txEvents["rotary"] =
+          getTxEvent(sheetObject.cell(CellIndex.indexByString('H11')).value);
+
+      return txEvents;
+    } catch (e) {
+      print('Exception in reading IO excel file : $e');
+      LogEntryStorage().writeLogfile('Exception in reading IO excel file : $e');
       return null;
     }
   }

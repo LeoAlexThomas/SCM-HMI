@@ -32,6 +32,59 @@ import 'package:marquee_text/marquee_text.dart';
 // To prevent screen to go sleep mode
 import 'package:wakelock/wakelock.dart';
 
+enum SendIncreamentActionEnums {
+  T1By1("T1=T1+1"),
+  T1By2("T1=T1+2"),
+  T1By4("T1=T1+4"),
+  T1By8("T1=T1+8"),
+  T2By1("T2=T2+1"),
+  T2By2("T2=T2+2"),
+  T2By4("T2=T2+4"),
+  T2By8("T2=T2+8"),
+  T3By1("T3=T3+1"),
+  T3By2("T3=T3+2"),
+  T3By4("T3=T3+4"),
+  T3By8("T3=T3+8"),
+  T4By1("T4=T4+1"),
+  T4By2("T4=T4+2"),
+  T4By4("T4=T4+4"),
+  T4By8("T4=T4+8"),
+  H1By1("H1=H1+1"),
+  H1By2("H1=H1+2"),
+  H1By4("H1=H1+4"),
+  H1By8("H1=H1+8"),
+  R1By2("R1=R1+2"),
+  R1By4("R1=R1+4");
+
+  const SendIncreamentActionEnums(this.value);
+  final String value;
+}
+
+const List<SendIncreamentActionEnums> txEventsList = [
+  SendIncreamentActionEnums.T1By1,
+  SendIncreamentActionEnums.T1By2,
+  SendIncreamentActionEnums.T1By4,
+  SendIncreamentActionEnums.T1By8,
+  SendIncreamentActionEnums.T2By1,
+  SendIncreamentActionEnums.T2By2,
+  SendIncreamentActionEnums.T2By4,
+  SendIncreamentActionEnums.T2By8,
+  SendIncreamentActionEnums.T3By1,
+  SendIncreamentActionEnums.T3By2,
+  SendIncreamentActionEnums.T3By4,
+  SendIncreamentActionEnums.T3By8,
+  SendIncreamentActionEnums.T4By1,
+  SendIncreamentActionEnums.T4By2,
+  SendIncreamentActionEnums.T4By4,
+  SendIncreamentActionEnums.T4By8,
+  SendIncreamentActionEnums.H1By1,
+  SendIncreamentActionEnums.H1By2,
+  SendIncreamentActionEnums.H1By4,
+  SendIncreamentActionEnums.H1By8,
+  SendIncreamentActionEnums.R1By2,
+  SendIncreamentActionEnums.R1By4,
+];
+
 void main() {
   try {
     WidgetsFlutterBinding
@@ -326,6 +379,7 @@ class _MainAppSampleState extends State<MainAppSample> {
   List? appconfig = [];
   List? gasCalValues = [];
   List? sqzCalValues = [];
+  Map<String, SendIncreamentActionEnums> ioFormat = {};
   String helpFilePath = '';
   String alerm = '';
 
@@ -415,6 +469,13 @@ class _MainAppSampleState extends State<MainAppSample> {
       }
     });
 
+    appConfigFile.readIOInputs().then((value) {
+      if (value == null) {
+        return;
+      }
+      ioFormat = value;
+    });
+
     appConfigFile.readExcelFile().then((value) {
       try {
         if ((value != null) && (value.length != 0)) {
@@ -423,7 +484,7 @@ class _MainAppSampleState extends State<MainAppSample> {
           gasCalValues = value[2];
           sqzCalValues = value[3];
           helpFilePath = value[4];
-
+          debugging = appconfig![9];
           var model = appconfig![0].toString().padLeft(7, '0');
           if (model.substring(0, 1) == '1') {
             b_inert_available = true;
@@ -492,6 +553,12 @@ class _MainAppSampleState extends State<MainAppSample> {
 
     // Timer.periodic(const Duration(seconds: 1), (timer) {
     //   displayText('ccc@192939495969798999112233eeee');
+    // });
+
+    // Dummy data transfer for checking purpose
+
+    // Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   transX();
     // });
 
     super.initState();
@@ -3495,47 +3562,142 @@ class _MainAppSampleState extends State<MainAppSample> {
     }
   }
 
+  void getTxEventValue(SendIncreamentActionEnums value,
+      Map<String, int> sendData, Function(Map<String, int> data) updateValues) {
+    switch (value) {
+      case SendIncreamentActionEnums.T1By1:
+        sendData["T1"] = sendData["T1"]! + 1;
+        break;
+      case SendIncreamentActionEnums.T1By2:
+        sendData["T1"] = sendData["T1"]! + 2;
+        break;
+      case SendIncreamentActionEnums.T1By4:
+        sendData["T1"] = sendData["T1"]! + 4;
+        break;
+      case SendIncreamentActionEnums.T1By8:
+        sendData["T1"] = sendData["T1"]! + 8;
+        break;
+      case SendIncreamentActionEnums.T2By1:
+        sendData["T2"] = sendData["T2"]! + 1;
+        break;
+      case SendIncreamentActionEnums.T2By2:
+        sendData["T2"] = sendData["T2"]! + 2;
+        break;
+      case SendIncreamentActionEnums.T2By4:
+        sendData["T2"] = sendData["T2"]! + 4;
+        break;
+      case SendIncreamentActionEnums.T2By8:
+        sendData["T2"] = sendData["T2"]! + 8;
+        break;
+      case SendIncreamentActionEnums.T3By1:
+        sendData["T3"] = sendData["T3"]! + 1;
+        break;
+      case SendIncreamentActionEnums.T3By2:
+        sendData["T3"] = sendData["T3"]! + 2;
+        break;
+      case SendIncreamentActionEnums.T3By4:
+        sendData["T3"] = sendData["T3"]! + 4;
+        break;
+      case SendIncreamentActionEnums.T3By8:
+        sendData["T3"] = sendData["T3"]! + 8;
+        break;
+      case SendIncreamentActionEnums.T4By1:
+        sendData["T4"] = sendData["T4"]! + 1;
+        break;
+      case SendIncreamentActionEnums.T4By2:
+        sendData["T4"] = sendData["T4"]! + 2;
+        break;
+      case SendIncreamentActionEnums.T4By4:
+        sendData["T4"] = sendData["T4"]! + 4;
+        break;
+      case SendIncreamentActionEnums.T4By8:
+        sendData["T4"] = sendData["T4"]! + 8;
+        break;
+      case SendIncreamentActionEnums.H1By1:
+        sendData["H1"] = sendData["H1"]! + 1;
+        break;
+      case SendIncreamentActionEnums.H1By2:
+        sendData["H1"] = sendData["H1"]! + 2;
+        break;
+      case SendIncreamentActionEnums.H1By4:
+        sendData["H1"] = sendData["H1"]! + 4;
+        break;
+      case SendIncreamentActionEnums.H1By8:
+        sendData["H1"] = sendData["H1"]! + 8;
+        break;
+      case SendIncreamentActionEnums.R1By2:
+        sendData["R1"] = sendData["R1"]! + 2;
+        break;
+      case SendIncreamentActionEnums.R1By4:
+        sendData["R1"] = sendData["R1"]! + 4;
+        break;
+    }
+    updateValues(sendData);
+  }
+
   // Sending Data
 
   String transX() {
-    int T1 = 48;
-    int T2 = 48;
-    int T3 = 48;
-    int T4 = 48;
-    int H1 = 48;
-    int R1 = 48;
-    int D1 = 48;
-    if (b_btn_Mains) {
-      T1 += 1;
+    Map<String, int> sendEventData = {
+      "T1": 48,
+      "T2": 48,
+      "T3": 48,
+      "T4": 48,
+      "H1": 48,
+      "R1": 48,
+      "D1": 48,
+    };
+    if (b_btn_Mains && ioFormat.entries.length != 0) {
+      getTxEventValue(ioFormat["main"]!, sendEventData,
+          (newValue) => sendEventData = newValue);
       // Heater Outputs
-      if (bFurnaceHeatOUT) H1 += 1;
-      if (bPowderHeatOUT) H1 += 2;
-      if (bMouldHeatOUT) H1 += 4;
-      if (bRunwayHeatOUT) H1 += 8;
+      if (bFurnaceHeatOUT)
+        getTxEventValue(ioFormat["furnace"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
+      if (bPowderHeatOUT)
+        getTxEventValue(ioFormat["powder"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
+      if (bMouldHeatOUT)
+        getTxEventValue(ioFormat["mould"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
+      if (bRunwayHeatOUT)
+        getTxEventValue(ioFormat["runway"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
 
-      if (b_btn_Stirrer) R1 += 4; //R7
-      if (b_btn_Centrifugal) R1 += 2;
+      if (b_btn_Stirrer)
+        getTxEventValue(ioFormat["stirrer"]!, sendEventData,
+            (newValue) => sendEventData = newValue); //R7
+      if (b_btn_Centrifugal)
+        getTxEventValue(ioFormat["rotary"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
 
       // Hydraulic Pump
-      if (b_btn_Sqz_Pump) T3 += 4;
+      if (b_btn_Sqz_Pump)
+        getTxEventValue(ioFormat["squeezePump"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
 
       //Data Logger Attachment
       if (b_data_logger_available) //check if attachment is enabled
       if (b_btn_Data_Logger) // check if button is clicked
       {
-        T4 = T4 + 8; // Command
-        D1 = D1 - 40;
+        getTxEventValue(ioFormat["dataLogger"]!, sendEventData,
+            (newValue) => sendEventData = newValue); // Command
+        sendEventData["D1"] = sendEventData["D1"]! - 40;
       }
 
       // Vacuum Pump  (or) vacuum solinoid
-      if (b_btn_Vacuum_Pump) T3 += 2;
+      if (b_btn_Vacuum_Pump)
+        getTxEventValue(ioFormat["vaccumPump"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
 
       if (d_pv_furnace > 650) {
         // Bottom Pouring Opne Close
         if (b_btn_Pour_Open)
-          T1 += 2; //Pour open
+          getTxEventValue(ioFormat["pourOpen"]!, sendEventData,
+              (newValue) => sendEventData = newValue); //Pour open
         else
-          T1 += 4; //Pour close
+          getTxEventValue(ioFormat["pourClose"]!, sendEventData,
+              (newValue) => sendEventData = newValue); //Pour close
       }
 
       //STIRRER LIFT POSITION
@@ -3544,24 +3706,31 @@ class _MainAppSampleState extends State<MainAppSample> {
       //if d_sv_lift_pos=2 --> UP
       if ((b_btn_Auto_Jog) || (b_lift_pos_up) || (b_lift_pos_down)) {
         if (d_sv_lift_pos == 1) //Down
-          T2 += 1;
+          getTxEventValue(ioFormat["stirrerDown"]!, sendEventData,
+              (newValue) => sendEventData = newValue);
         else if (d_sv_lift_pos == 2) //Up
-          T1 += 8;
+          getTxEventValue(ioFormat["stirrerUp"]!, sendEventData,
+              (newValue) => sendEventData = newValue);
       }
 
       // Inert Gas
       if (b_gas_out) {
         //Gas Retort
-        T2 += 8;
+        getTxEventValue(ioFormat["gasOutRetort"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
         if (b_SF6) // gas2
-          T2 += 4;
+          getTxEventValue(ioFormat["gasInletSF6"]!, sendEventData,
+              (newValue) => sendEventData = newValue);
         if (b_Ar) // gas1
-          T2 += 2;
+          getTxEventValue(ioFormat["gasInletArgon"]!, sendEventData,
+              (newValue) => sendEventData = newValue);
       }
 
       // Pouring Gas Shield
       if (b_btn_Pour_Open) {
-        if (b_B_Gas_Out) T3 += 1;
+        if (b_B_Gas_Out)
+          getTxEventValue(ioFormat["gasOutPouring"]!, sendEventData,
+              (newValue) => sendEventData = newValue);
       }
 
       //UV LIFT POSITION
@@ -3569,21 +3738,28 @@ class _MainAppSampleState extends State<MainAppSample> {
       // if d_sv_UV_lift_pos=1 --> DOWN
       //if d_sv_UV_lift_pos=2 --> UP
       if (d_sv_UV_lift_pos == 1) //Down
-        T4 += 4;
+        getTxEventValue(ioFormat["uvDown"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
       else if (d_sv_UV_lift_pos == 2) //Up
-        T4 += 2;
-      if (b_btn_EM_Vibrator) T4 += 1;
-      if (b_btn_PowderEMV) T3 += 8;
+        getTxEventValue(ioFormat["uvUp"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
+      if (b_btn_EM_Vibrator)
+        getTxEventValue(ioFormat["uvVibrator"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
+      if (b_btn_PowderEMV)
+        getTxEventValue(ioFormat["powderEMV"]!, sendEventData,
+            (newValue) => sendEventData = newValue);
     }
 
+    print("Data check: $sendEventData");
     // converting current values to ascii and sending to terminal
-    var ac1 = new String.fromCharCode(T1);
-    var ac2 = new String.fromCharCode(T2);
-    var ac3 = new String.fromCharCode(T3);
-    var ac4 = new String.fromCharCode(T4);
-    var h1 = new String.fromCharCode(H1);
-    var r1 = new String.fromCharCode(R1);
-    var d1 = new String.fromCharCode(D1);
+    var ac1 = new String.fromCharCode(sendEventData["T1"]!);
+    var ac2 = new String.fromCharCode(sendEventData["T2"]!);
+    var ac3 = new String.fromCharCode(sendEventData["T3"]!);
+    var ac4 = new String.fromCharCode(sendEventData["T4"]!);
+    var h1 = new String.fromCharCode(sendEventData["H1"]!);
+    var r1 = new String.fromCharCode(sendEventData["R1"]!);
+    var d1 = new String.fromCharCode(sendEventData["D1"]!);
     var stir = new String.fromCharCode(
         d_stirrer_out == 13 ? d_stirrer_out! + 1 : d_stirrer_out!);
     var cent = new String.fromCharCode(
