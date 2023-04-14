@@ -129,10 +129,7 @@ class _MainAppSampleState extends State<MainAppSample> {
       'Powder',
       'Mould',
       'Stirrer',
-      'Gas',
       'Pour',
-      'Squeeze',
-      'Vaccum'
     ]
   ];
   String wholemsg = '';
@@ -180,7 +177,7 @@ class _MainAppSampleState extends State<MainAppSample> {
   //bool b_B_Gas_Out = false;
   //For pouring gas
   bool b_Start_B_Gas_Counter = false;
-  int d_shield_max_time = 25;
+  int d_shield_max_time = 15;
   int d_B_Gas_idx = 0;
   bool b_B_Gas_Out = false;
   // For Heater label color
@@ -519,6 +516,11 @@ class _MainAppSampleState extends State<MainAppSample> {
           } else {
             b_data_logger_available = false;
           }
+          if (b_inert_available) recordExcelFileContent[0].add("Gas");
+          if (b_vacuum_available) recordExcelFileContent[0].add("Vaccum");
+          if (b_centrifugal_available)
+            recordExcelFileContent[0].add("Centrifugal");
+          if (b_squeeze_available) recordExcelFileContent[0].add("Squeeze");
           alerm = appconfig!.last.toString().toUpperCase();
           appConfigTextAssign();
         }
@@ -1171,12 +1173,15 @@ class _MainAppSampleState extends State<MainAppSample> {
                                   } else {
                                     b_btn_Pour_Open = btnState('pouring',
                                         btns['btnPour'], b_btn_Pour_Open);
-                                  }
-                                  if (b_btn_Pour_Open) {
-                                    b_Start_B_Gas_Counter = true;
-                                  } else {
+                                    b_Start_B_Gas_Counter = false;
                                     d_B_Gas_idx = 0;
                                   }
+                                  // if (b_btn_Pour_Open) {
+                                  //   b_Start_B_Gas_Counter = true;
+                                  // } else {
+                                  //   d_B_Gas_idx = 0;
+                                  //   b_Start_B_Gas_Counter = false;
+                                  // }
                                 });
                               }
                             }
@@ -1846,10 +1851,11 @@ class _MainAppSampleState extends State<MainAppSample> {
       d_pv_powder,
       d_pv_mould,
       d_pv_stirrer,
-      d_pv_gas_flow,
       b_btn_Pour_Open ? 'ON' : 'OFF',
-      d_pv_sqz_prsr,
-      b_btn_Vacuum_Pump ? 'ON' : 'OFF'
+      if (b_inert_available) d_pv_gas_flow,
+      if (b_vacuum_available) b_btn_Vacuum_Pump ? 'ON' : 'OFF',
+      if (b_centrifugal_available) d_pv_centrifuge,
+      if (b_squeeze_available) d_pv_sqz_prsr,
     ]);
     if (recordScrollController.hasClients) {
       recordScrollController
@@ -2409,12 +2415,13 @@ class _MainAppSampleState extends State<MainAppSample> {
           'Powder',
           'Mould',
           'Stirrer',
-          'Gas',
           'Pour',
-          'Squeeze',
-          'Vaccum'
         ]
       ];
+      if (b_inert_available) recordExcelFileContent[0].add("Gas");
+      if (b_vacuum_available) recordExcelFileContent[0].add("Vaccum");
+      if (b_centrifugal_available) recordExcelFileContent[0].add("Centrifugal");
+      if (b_squeeze_available) recordExcelFileContent[0].add("Squeeze");
     });
   }
 
@@ -3456,7 +3463,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                   setState(() {
                     b_btn_Pour_Open =
                         btnState('pouring', btns['btnPour'], b_btn_Pour_Open);
-                    b_B_Gas_Out = true;
+                    b_Start_B_Gas_Counter = true;
                   });
                   Navigator.pop(context);
                 },
@@ -3903,13 +3910,22 @@ class _MainAppSampleState extends State<MainAppSample> {
 
       if (d_pv_furnace > 650) {
         // Bottom Pouring Opne Close
-        if (b_btn_Pour_Open)
+        if (b_btn_Pour_Open) {
           getTxEventValue(ioFormat["pourOpen"]!, sendEventData,
               (newValue) => sendEventData = newValue); //Pour open
-        else
+          // Pouring Gas Shield
+          if (b_B_Gas_Out) {
+            getTxEventValue(ioFormat["gasOutPouring"]!, sendEventData,
+                (newValue) => sendEventData = newValue);
+          }
+        } else
           getTxEventValue(ioFormat["pourClose"]!, sendEventData,
               (newValue) => sendEventData = newValue); //Pour close
       }
+
+      // if (b_btn_Pour_Open) {
+
+      // }
 
       //STIRRER LIFT POSITION
       //if d_sv_lift_pos=0  --> OFF
@@ -3934,13 +3950,6 @@ class _MainAppSampleState extends State<MainAppSample> {
               (newValue) => sendEventData = newValue);
         if (b_Ar) // gas1
           getTxEventValue(ioFormat["gasInletArgon"]!, sendEventData,
-              (newValue) => sendEventData = newValue);
-      }
-
-      // Pouring Gas Shield
-      if (b_btn_Pour_Open) {
-        if (b_B_Gas_Out)
-          getTxEventValue(ioFormat["gasOutPouring"]!, sendEventData,
               (newValue) => sendEventData = newValue);
       }
 
@@ -4056,7 +4065,7 @@ class _MainAppSampleState extends State<MainAppSample> {
       d_cen_min_val = appconfig![7];
       d_cen_max_val = appconfig![8];
       debugging = appconfig![9];
-      d_gas_delay = appconfig![10];
+      d_shield_max_time = appconfig![10];
       d_vacuum_delay = appconfig![11];
     });
   }
@@ -4127,10 +4136,10 @@ class _MainAppSampleState extends State<MainAppSample> {
         }
         bDataReceived = false;
         if (b_Start_B_Gas_Counter) {
-          d_B_Gas_idx++;
           if (d_B_Gas_idx >= d_shield_max_time) {
             b_B_Gas_Out = true;
           } else {
+            d_B_Gas_idx++;
             b_B_Gas_Out = false;
           }
         }
