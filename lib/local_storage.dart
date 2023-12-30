@@ -103,6 +103,8 @@ class AppConfigStorage {
           .add(sheetObject.cell(CellIndex.indexByString('C22')).value);
       mechineDetails
           .add(sheetObject.cell(CellIndex.indexByString('C23')).value);
+      mechineDetails
+          .add(sheetObject.cell(CellIndex.indexByString('C24')).value);
 
       gasCalibrationValues
           .add(sheetObject.cell(CellIndex.indexByString('H3')).value);

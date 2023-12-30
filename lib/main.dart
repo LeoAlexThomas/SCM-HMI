@@ -365,6 +365,7 @@ class _MainAppSampleState extends State<MainAppSample> {
   bool b_squeeze_available = false;
   bool b_uv_vib_available = false;
   bool b_data_logger_available = false;
+  bool b_data_logger_screen_available = false;
 
   List<Widget> rxDebugList = [];
   List<Widget> txDebugList = [];
@@ -763,6 +764,7 @@ class _MainAppSampleState extends State<MainAppSample> {
                     selectedIndex = 7;
                   }),
                   isSeleted: selectedIndex == 7,
+                  isAvaiable: b_data_logger_screen_available,
                 ),
                 NavBarItem(
                   title: 'RECORD',
@@ -4067,6 +4069,7 @@ class _MainAppSampleState extends State<MainAppSample> {
       debugging = appconfig![9];
       d_shield_max_time = appconfig![10];
       d_vacuum_delay = appconfig![11];
+      b_data_logger_screen_available = appconfig![13] == 'Y';
     });
   }
 
