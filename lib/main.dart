@@ -396,6 +396,32 @@ class _MainAppSampleState extends State<MainAppSample> {
     '10 Min'
   ];
 
+  // Receive Data Structure
+  Map<String, String> rxDataStructure = {
+    "furnace": "T1",
+    "melt": "T2",
+    "powder": "T3",
+    "mould": "T4",
+    "runway": "T5",
+    "stirrer": "R1",
+    "rotary": "R2",
+    "gas": "G1",
+    "squeeze": "G2",
+  };
+
+  Map<String, List<int>> rxDataPlacement = {
+    "T1": [0, 1],
+    "T2": [2, 3],
+    "T3": [4, 5],
+    "T4": [6, 7],
+    "T5": [8, 9],
+    "T6": [10, 11],
+    "R1": [12, 13],
+    "R2": [14, 15],
+    "G1": [16, 17],
+    "G2": [18, 19],
+  };
+
   // Data logger Info
   final dataLoggerFile = DataLoggerStorage();
   late Timer dataLoggerTimerEvent;
@@ -469,7 +495,8 @@ class _MainAppSampleState extends State<MainAppSample> {
       if (value == null) {
         return;
       }
-      ioFormat = value;
+      ioFormat = value["txData"];
+      rxDataStructure = value["rxData"];
     });
 
     appConfigFile.readExcelFile().then((value) {
@@ -553,7 +580,8 @@ class _MainAppSampleState extends State<MainAppSample> {
     // Dummy data for record checking purpose
 
     // Timer.periodic(const Duration(seconds: 1), (timer) {
-    //   displayText('ccc@192939495969798999112233eeee');
+    //   displayText(
+    //       'ccc@${new String.fromCharCodes(('03030303030000010011111111111111111111').codeUnits)}eeee');
     // });
 
     // Dummy data transfer for checking purpose
@@ -3594,6 +3622,15 @@ class _MainAppSampleState extends State<MainAppSample> {
   }
 
   Future<void> displayText(String text) async {
+    final List<int> rxFurnace = rxDataPlacement[rxDataStructure["furnace"]!]!;
+    final List<int> rxMelt = rxDataPlacement[rxDataStructure["melt"]!]!;
+    final List<int> rxPowder = rxDataPlacement[rxDataStructure["powder"]!]!;
+    final List<int> rxMould = rxDataPlacement[rxDataStructure["mould"]!]!;
+    final List<int> rxRunway = rxDataPlacement[rxDataStructure["runway"]!]!;
+    final List<int> rxStirrer = rxDataPlacement[rxDataStructure["stirrer"]!]!;
+    final List<int> rxRotary = rxDataPlacement[rxDataStructure["rotary"]!]!;
+    final List<int> rxGas = rxDataPlacement[rxDataStructure["gas"]!]!;
+    final List<int> rxSqueeze = rxDataPlacement[rxDataStructure["squeeze"]!]!;
     try {
       // String text = String.fromCharCodes(data);
       if (text.contains("@")) {
@@ -3615,41 +3652,50 @@ class _MainAppSampleState extends State<MainAppSample> {
             () {
               d_pv_furnace = dvalidateTemperature(
                   int.parse(
-                    text.codeUnitAt(0).toString().padLeft(2, '0') +
-                        text.codeUnitAt(1).toString().padLeft(2, '0'),
+                    text.codeUnitAt(rxFurnace[0]).toString().padLeft(2, '0') +
+                        text
+                            .codeUnitAt(rxFurnace[1])
+                            .toString()
+                            .padLeft(2, '0'),
                   ),
                   d_pv_furnace);
               d_pv_melt = dvalidateTemperature(
                   int.parse(
-                    text.codeUnitAt(2).toString().padLeft(2, '0') +
-                        text.codeUnitAt(3).toString().padLeft(2, '0'),
+                    text.codeUnitAt(rxMelt[0]).toString().padLeft(2, '0') +
+                        text.codeUnitAt(rxMelt[1]).toString().padLeft(2, '0'),
                   ),
                   d_pv_melt);
               d_pv_powder = dvalidateTemperature(
                   int.parse(
-                    text.codeUnitAt(4).toString().padLeft(2, '0') +
-                        text.codeUnitAt(5).toString().padLeft(2, '0'),
+                    text.codeUnitAt(rxPowder[0]).toString().padLeft(2, '0') +
+                        text.codeUnitAt(rxPowder[1]).toString().padLeft(2, '0'),
                   ),
                   d_pv_powder);
               d_pv_mould = dvalidateTemperature(
                   int.parse(
-                    text.codeUnitAt(6).toString().padLeft(2, '0') +
-                        text.codeUnitAt(7).toString().padLeft(2, '0'),
+                    text.codeUnitAt(rxMould[0]).toString().padLeft(2, '0') +
+                        text.codeUnitAt(rxMould[1]).toString().padLeft(2, '0'),
                   ),
                   d_pv_mould);
               if (b_squeeze_available) {
                 d_pv_runway = dvalidateTemperature(
                     int.parse(
-                      text.codeUnitAt(8).toString().padLeft(2, '0') +
-                          text.codeUnitAt(9).toString().padLeft(2, '0'),
+                      text.codeUnitAt(rxRunway[0]).toString().padLeft(2, '0') +
+                          text
+                              .codeUnitAt(rxRunway[1])
+                              .toString()
+                              .padLeft(2, '0'),
                     ),
                     d_pv_runway);
               }
               // d_pv_spare = text.codeUnitAt(10) + text.codeUnitAt(11);
               d_pv_stirrer = stirValidate(
                   int.parse(
-                    text.codeUnitAt(12).toString().padLeft(2, '0') +
-                        text.codeUnitAt(13).toString().padLeft(2, '0'),
+                    text.codeUnitAt(rxStirrer[0]).toString().padLeft(2, '0') +
+                        text
+                            .codeUnitAt(rxStirrer[1])
+                            .toString()
+                            .padLeft(2, '0'),
                   ),
                   d_pv_stirrer);
               if (!b_btn_Stirrer) {
@@ -3659,9 +3705,11 @@ class _MainAppSampleState extends State<MainAppSample> {
               }
 
               if (b_centrifugal_available) {
-                d_pv_centrifuge = int.parse(
-                    text.codeUnitAt(14).toString().padLeft(2, '0') +
-                        text.codeUnitAt(15).toString().padLeft(2, '0'));
+                d_pv_centrifuge = int.parse(text
+                        .codeUnitAt(rxRotary[0])
+                        .toString()
+                        .padLeft(2, '0') +
+                    text.codeUnitAt(rxRotary[1]).toString().padLeft(2, '0'));
                 if (!b_btn_Centrifugal) {
                   d_pv_centrifuge = 0;
                 }
@@ -3671,8 +3719,8 @@ class _MainAppSampleState extends State<MainAppSample> {
 
               if (b_inert_available) {
                 d_pv_gas_flow = int.parse(
-                    text.codeUnitAt(16).toString().padLeft(2, '0') +
-                        text.codeUnitAt(17).toString().padLeft(2, '0'));
+                    text.codeUnitAt(rxGas[0]).toString().padLeft(2, '0') +
+                        text.codeUnitAt(rxGas[1]).toString().padLeft(2, '0'));
                 d_pv_gas_flow = dCalibratedGasValue(d_pv_gas_flow);
               } else {
                 d_pv_gas_flow = 0;
@@ -3681,8 +3729,11 @@ class _MainAppSampleState extends State<MainAppSample> {
               if (b_squeeze_available) {
                 d_pv_sqz_prsr = dCalibratedSqzPrsrValue(
                     int.parse(
-                      text.codeUnitAt(18).toString().padLeft(2, '0') +
-                          text.codeUnitAt(19).toString().padLeft(2, '0'),
+                      text.codeUnitAt(rxSqueeze[0]).toString().padLeft(2, '0') +
+                          text
+                              .codeUnitAt(rxSqueeze[1])
+                              .toString()
+                              .padLeft(2, '0'),
                     ),
                     d_pv_sqz_prsr);
               } else {
@@ -3973,7 +4024,6 @@ class _MainAppSampleState extends State<MainAppSample> {
             (newValue) => sendEventData = newValue);
     }
 
-    print("Data check: $sendEventData");
     // converting current values to ascii and sending to terminal
     var ac1 = new String.fromCharCode(sendEventData["T1"]!);
     var ac2 = new String.fromCharCode(sendEventData["T2"]!);

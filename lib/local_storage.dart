@@ -174,10 +174,11 @@ class AppConfigStorage {
     }
   }
 
-  Future<Map<String, SendIncreamentActionEnums>?> readIOInputs() async {
+  Future<Map<String, dynamic>?> readIOInputs() async {
     try {
       // For Config excel file
       Map<String, SendIncreamentActionEnums> txEvents = {};
+      Map<String, String> rxEvents = {};
       final excelFile = await localFile("config.xlsx");
       if (excelFile == null) {
         return null;
@@ -231,7 +232,23 @@ class AppConfigStorage {
       txEvents["rotary"] =
           getTxEvent(sheetObject.cell(CellIndex.indexByString('H11')).value);
 
-      return txEvents;
+      rxEvents["furnace"] =
+          sheetObject.cell(CellIndex.indexByString('M3')).value;
+      rxEvents["melt"] = sheetObject.cell(CellIndex.indexByString('M4')).value;
+      rxEvents["powder"] =
+          sheetObject.cell(CellIndex.indexByString('M5')).value;
+      rxEvents["mould"] = sheetObject.cell(CellIndex.indexByString('M6')).value;
+      rxEvents["runway"] =
+          sheetObject.cell(CellIndex.indexByString('M7')).value;
+      rxEvents["gas"] = sheetObject.cell(CellIndex.indexByString('M11')).value;
+      rxEvents["squeeze"] =
+          sheetObject.cell(CellIndex.indexByString('M12')).value;
+      rxEvents["stirrer"] =
+          sheetObject.cell(CellIndex.indexByString('M16')).value;
+      rxEvents["rotary"] =
+          sheetObject.cell(CellIndex.indexByString('M17')).value;
+
+      return {"txData": txEvents, "rxData": rxEvents};
     } catch (e) {
       print('Exception in reading IO excel file : $e');
       LogEntryStorage().writeLogfile('Exception in reading IO excel file : $e');
